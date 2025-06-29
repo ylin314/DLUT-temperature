@@ -1,0 +1,258 @@
+/* CUST宿舍实时温度监控系统样式 */
+
+:root {
+    --primary-color: #0d6efd;
+    --temperature-color: #dc3545;
+    --humidity-color: #0dcaf0;
+    --success-color: #198754;
+    --warning-color: #ffc107;
+    --danger-color: #dc3545;
+    --info-color: #0dcaf0;
+    --light-color: #f8f9fa;
+    --dark-color: #212529;
+}
+
+body {
+    background-color: #f8f9fa;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+/* 状态指示器样式 */
+.status-indicator {
+    padding: 1rem;
+}
+
+.status-indicator i {
+    font-size: 2rem;
+    margin-bottom: 0.5rem;
+    display: block;
+}
+
+#connection-icon.connected {
+    color: var(--success-color);
+}
+
+#connection-icon.disconnected {
+    color: var(--danger-color);
+}
+
+/* 温度卡片样式 */
+.temperature-card {
+    background: linear-gradient(135deg, #ff6b6b, #ee5a24);
+    color: white;
+    border: none;
+    box-shadow: 0 4px 15px rgba(238, 90, 36, 0.3);
+    transition: transform 0.3s ease;
+}
+
+.temperature-card:hover {
+    transform: translateY(-5px);
+}
+
+.temperature-icon {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+    opacity: 0.8;
+}
+
+.temperature-value {
+    font-size: 3.5rem;
+    font-weight: bold;
+    margin: 1rem 0;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+}
+
+.temperature-trend {
+    font-size: 1.1rem;
+    opacity: 0.9;
+}
+
+/* 湿度卡片样式 */
+.humidity-card {
+    background: linear-gradient(135deg, #74b9ff, #0984e3);
+    color: white;
+    border: none;
+    box-shadow: 0 4px 15px rgba(116, 185, 255, 0.3);
+    transition: transform 0.3s ease;
+}
+
+.humidity-card:hover {
+    transform: translateY(-5px);
+}
+
+.humidity-icon {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+    opacity: 0.8;
+}
+
+.humidity-value {
+    font-size: 3.5rem;
+    font-weight: bold;
+    margin: 1rem 0;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+}
+
+.humidity-trend {
+    font-size: 1.1rem;
+    opacity: 0.9;
+}
+
+/* 趋势指示器 */
+.trend-up {
+    color: #ff6b6b;
+}
+
+.trend-down {
+    color: #74b9ff;
+}
+
+.trend-stable {
+    color: #55a3ff;
+}
+
+/* 卡片样式增强 */
+.card {
+    border: none;
+    border-radius: 15px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    transition: box-shadow 0.3s ease;
+}
+
+.card:hover {
+    box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+}
+
+.card-header {
+    background-color: white;
+    border-bottom: 1px solid #e9ecef;
+    border-radius: 15px 15px 0 0 !important;
+}
+
+/* 按钮样式 */
+.btn {
+    border-radius: 8px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+/* 徽章样式 */
+.badge {
+    font-size: 0.9rem;
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+}
+
+/* 图表容器 */
+#temperatureChart {
+    max-height: 400px;
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+    .temperature-value,
+    .humidity-value {
+        font-size: 2.5rem;
+    }
+    
+    .temperature-icon,
+    .humidity-icon {
+        font-size: 2rem;
+    }
+    
+    .status-indicator {
+        padding: 0.5rem;
+        margin-bottom: 1rem;
+    }
+    
+    .status-indicator i {
+        font-size: 1.5rem;
+    }
+}
+
+/* 动画效果 */
+@keyframes pulse {
+    0% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.05);
+    }
+    100% {
+        transform: scale(1);
+    }
+}
+
+.pulse {
+    animation: pulse 2s infinite;
+}
+
+/* 加载动画 */
+.loading {
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    border: 3px solid #f3f3f3;
+    border-top: 3px solid var(--primary-color);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* 数据更新闪烁效果 */
+.data-updated {
+    animation: flash 0.5s ease-in-out;
+}
+
+@keyframes flash {
+    0% { background-color: transparent; }
+    50% { background-color: rgba(13, 110, 253, 0.2); }
+    100% { background-color: transparent; }
+}
+
+/* 连接状态样式 */
+.status-connected {
+    color: var(--success-color);
+}
+
+.status-disconnected {
+    color: var(--danger-color);
+}
+
+.status-connecting {
+    color: var(--warning-color);
+}
+
+/* 页脚样式 */
+footer {
+    margin-top: auto;
+    border-top: 1px solid #e9ecef;
+}
+
+/* 自定义滚动条 */
+::-webkit-scrollbar {
+    width: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--primary-color);
+    border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #0b5ed7;
+}

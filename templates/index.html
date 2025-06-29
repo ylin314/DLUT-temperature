@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CUST宿舍实时温度</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="{{ url_for('static', filename='css/style.css') }}" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.socket.io/4.5.0/socket.io.min.js"></script>
+</head>
+<body>
+    <div class="container-fluid">
+        <!-- 头部 -->
+        <header class="row bg-primary text-white py-3 mb-4">
+            <div class="col-12 text-center">
+                <h1 class="mb-0">
+                    <i class="bi bi-thermometer-half"></i>
+                    CUST宿舍实时温度
+                </h1>
+                <p class="mb-0 mt-2">长春理工大学宿舍环境数据展示</p>
+            </div>
+        </header>
+
+        <!-- 状态指示器 -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-body">
+                        <div class="row text-center">
+                            <div class="col-md-3">
+                                <div class="status-indicator">
+                                    <i class="bi bi-wifi" id="connection-icon"></i>
+                                    <div>连接状态</div>
+                                    <span id="connection-status" class="badge bg-secondary">未知</span>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="status-indicator">
+                                    <i class="bi bi-device-hdd"></i>
+                                    <div>设备名称</div>
+                                    <span id="device-name" class="badge bg-info">未连接</span>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="status-indicator">
+                                    <i class="bi bi-clock"></i>
+                                    <div>最后更新</div>
+                                    <span id="last-update" class="badge bg-warning">--</span>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="status-indicator">
+                                    <i class="bi bi-battery-half"></i>
+                                    <div>设备电量</div>
+                                    <span id="battery-level" class="badge bg-success">--</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 实时数据显示 -->
+        <div class="row mb-4">
+            <div class="col-md-6">
+                <div class="card temperature-card">
+                    <div class="card-body text-center">
+                        <i class="bi bi-thermometer-half temperature-icon"></i>
+                        <h2 class="card-title">温度</h2>
+                        <div class="temperature-value" id="temperature-value">--°C</div>
+                        <div class="temperature-trend" id="temperature-trend"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card humidity-card">
+                    <div class="card-body text-center">
+                        <i class="bi bi-droplet-half humidity-icon"></i>
+                        <h2 class="card-title">湿度</h2>
+                        <div class="humidity-value" id="humidity-value">--%</div>
+                        <div class="humidity-trend" id="humidity-trend"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 图表区域 -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">
+                            <i class="bi bi-graph-up"></i>
+                            历史数据趋势
+                        </h5>
+                        <div class="btn-group" role="group">
+                            <button type="button" class="btn btn-outline-primary btn-sm" onclick="loadHistory(1)">1小时</button>
+                            <button type="button" class="btn btn-outline-primary btn-sm" onclick="loadHistory(6)">6小时</button>
+                            <button type="button" class="btn btn-outline-primary btn-sm active" onclick="loadHistory(24)">24小时</button>
+                            <button type="button" class="btn btn-outline-primary btn-sm" onclick="loadHistory(168)">7天</button>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="temperatureChart" width="400" height="200"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 数据刷新控制 -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">
+                            <i class="bi bi-arrow-clockwise"></i>
+                            数据刷新
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row align-items-center">
+                            <div class="col-md-6">
+                                <button class="btn btn-info" onclick="refreshData()">
+                                    <i class="bi bi-arrow-clockwise"></i>
+                                    手动刷新数据
+                                </button>
+                            </div>
+                            <div class="col-md-6 text-end">
+                                <div class="form-check form-switch d-inline-block">
+                                    <input class="form-check-input" type="checkbox" id="autoRefresh" checked>
+                                    <label class="form-check-label" for="autoRefresh">
+                                        自动刷新 (30秒)
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 数据统计 -->
+        <div class="row mb-4">
+            <div class="col-md-3">
+                <div class="card text-center">
+                    <div class="card-body">
+                        <i class="bi bi-thermometer-low text-primary fs-1"></i>
+                        <h6 class="card-title mt-2">最低温度</h6>
+                        <p class="card-text fs-4" id="min-temp">--°C</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card text-center">
+                    <div class="card-body">
+                        <i class="bi bi-thermometer-high text-danger fs-1"></i>
+                        <h6 class="card-title mt-2">最高温度</h6>
+                        <p class="card-text fs-4" id="max-temp">--°C</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card text-center">
+                    <div class="card-body">
+                        <i class="bi bi-droplet text-info fs-1"></i>
+                        <h6 class="card-title mt-2">平均湿度</h6>
+                        <p class="card-text fs-4" id="avg-humidity">--%</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card text-center">
+                    <div class="card-body">
+                        <i class="bi bi-graph-up text-success fs-1"></i>
+                        <h6 class="card-title mt-2">数据点数</h6>
+                        <p class="card-text fs-4" id="data-count">--</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 页脚 -->
+        <footer class="row bg-light py-3 mt-5">
+            <div class="col-12 text-center text-muted">
+                <p class="mb-0">© 2025 CUST宿舍实时温度数据展示 | CUST </p>
+                <p class="mb-0 small">宿舍环境数据实时查看平台</p>
+                <p class="mb-0 small">Power By itdong.me</p>
+
+            </div>
+        </footer>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+</body>
+</html>
