@@ -36,6 +36,11 @@ class TemperatureMonitor {
             console.log('系统状态:', status);
             this.updateSystemStatus(status);
         });
+
+        this.socket.on('online_users_update', (data) => {
+            console.log('在线人数更新:', data);
+            this.updateOnlineUsers(data.online_users);
+        });
     }
 
     // 初始化图表
@@ -201,21 +206,27 @@ class TemperatureMonitor {
     // 更新设备信息
     updateDeviceInfo(data) {
         const deviceNameElement = document.getElementById('device-name');
-        const batteryElement = document.getElementById('battery-level');
 
         if (deviceNameElement && data.device_name) {
             deviceNameElement.textContent = data.device_name;
             deviceNameElement.className = 'badge bg-success';
         }
+    }
 
-        if (batteryElement && data.battery) {
-            batteryElement.textContent = `${data.battery}%`;
-            if (data.battery > 50) {
-                batteryElement.className = 'badge bg-success';
-            } else if (data.battery > 20) {
-                batteryElement.className = 'badge bg-warning';
+    // 更新在线人数
+    updateOnlineUsers(count) {
+        const onlineUsersElement = document.getElementById('online-users');
+        if (onlineUsersElement) {
+            onlineUsersElement.textContent = count;
+            // 根据在线人数设置不同的颜色
+            if (count === 0) {
+                onlineUsersElement.className = 'badge bg-secondary';
+            } else if (count <= 5) {
+                onlineUsersElement.className = 'badge bg-info';
+            } else if (count <= 10) {
+                onlineUsersElement.className = 'badge bg-primary';
             } else {
-                batteryElement.className = 'badge bg-danger';
+                onlineUsersElement.className = 'badge bg-success';
             }
         }
     }

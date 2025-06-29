@@ -29,6 +29,7 @@ connector = None
 storage = None
 latest_data = None
 is_monitoring = False
+online_users = 0  # 在线用户数统计
 
 class TemperatureMonitor:
     """温度监控服务"""
@@ -127,16 +128,28 @@ def get_status():
 @socketio.on('connect')
 def handle_connect():
     """WebSocket连接处理"""
-    logger.info('客户端已连接')
+    global online_users
+    online_users += 1
+    logger.info(f'客户端已连接，当前在线人数: {online_users}')
+
+    # 发送系统状态
     emit('status', {
         'is_connected': monitor.connector.is_connected if monitor.connector else False,
         'device_name': monitor.connector.current_device_name if monitor.connector else None
     })
 
+    # 广播在线人数更新给所有客户端
+    socketio.emit('online_users_update', {'online_users': online_users})
+
 @socketio.on('disconnect')
 def handle_disconnect():
     """WebSocket断开处理"""
-    logger.info('客户端已断开')
+    global online_users
+    online_users = max(0, online_users - 1)  # 确保不会小于0
+    logger.info(f'客户端已断开，当前在线人数: {online_users}')
+
+    # 广播在线人数更新给所有客户端
+    socketio.emit('online_users_update', {'online_users': online_users})
 
 @socketio.on('request_latest')
 def handle_request_latest():
