@@ -4,11 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CUST宿舍实时温度</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css" rel="stylesheet">
+    <link rel="icon" type="image/x-icon" href="https://cust.edu.cn/favicon.ico">
+    <link href="{{ url_for('static', filename='vendor/bootstrap/css/bootstrap.min.css') }}" rel="stylesheet">
+    <link href="{{ url_for('static', filename='vendor/bootstrap-icons/bootstrap-icons.css') }}" rel="stylesheet">
     <link href="{{ url_for('static', filename='css/style.css') }}" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://cdn.socket.io/4.5.0/socket.io.min.js"></script>
+    <script src="{{ url_for('static', filename='vendor/chartjs/chart.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='vendor/socketio/socket.io.min.js') }}"></script>
 </head>
 <body>
     <div class="container-fluid">
@@ -17,7 +18,7 @@
             <div class="col-12 text-center">
                 <h1 class="mb-0">
                     <i class="bi bi-thermometer-half"></i>
-                    CUST宿舍实时温度
+                    CUST 宿舍实时温度
                 </h1>
                 <p class="mb-0 mt-2">长春理工大学宿舍环境数据展示</p>
             </div>
@@ -28,7 +29,8 @@
             <div class="col-12">
                 <div class="card">
                     <div class="card-body">
-                        <div class="row text-center">
+                        <!-- 桌面端布局 -->
+                        <div class="row text-center d-none d-md-flex">
                             <div class="col-md-3">
                                 <div class="status-indicator">
                                     <i class="bi bi-wifi" id="connection-icon"></i>
@@ -58,6 +60,38 @@
                                 </div>
                             </div>
                         </div>
+
+                        <!-- 移动端紧凑布局 -->
+                        <div class="row text-center d-md-none mobile-status-row">
+                            <div class="col-3">
+                                <div class="status-indicator-mobile">
+                                    <i class="bi bi-wifi" id="connection-icon-mobile"></i>
+                                    <div>连接</div>
+                                    <span id="connection-status-mobile" class="badge bg-secondary">未知</span>
+                                </div>
+                            </div>
+                            <div class="col-3">
+                                <div class="status-indicator-mobile">
+                                    <i class="bi bi-device-hdd"></i>
+                                    <div>设备</div>
+                                    <span id="device-name-mobile" class="badge bg-info">未连接</span>
+                                </div>
+                            </div>
+                            <div class="col-3">
+                                <div class="status-indicator-mobile">
+                                    <i class="bi bi-clock"></i>
+                                    <div>更新</div>
+                                    <span id="last-update-mobile" class="badge bg-warning">--</span>
+                                </div>
+                            </div>
+                            <div class="col-3">
+                                <div class="status-indicator-mobile">
+                                    <i class="bi bi-people-fill"></i>
+                                    <div>在线</div>
+                                    <span id="online-users-mobile" class="badge bg-info">0</span>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -65,7 +99,7 @@
 
         <!-- 实时数据显示 -->
         <div class="row mb-4">
-            <div class="col-md-6">
+            <div class="col-6">
                 <div class="card temperature-card">
                     <div class="card-body text-center">
                         <i class="bi bi-thermometer-half temperature-icon"></i>
@@ -75,7 +109,7 @@
                     </div>
                 </div>
             </div>
-            <div class="col-md-6">
+            <div class="col-6">
                 <div class="card humidity-card">
                     <div class="card-body text-center">
                         <i class="bi bi-droplet-half humidity-icon"></i>
@@ -91,12 +125,12 @@
         <div class="row mb-4">
             <div class="col-12">
                 <div class="card">
-                    <div class="card-header d-flex justify-content-between align-items-center">
-                        <h5 class="mb-0">
+                    <div class="card-header d-flex justify-content-between align-items-center flex-wrap">
+                        <h5 class="mb-0 mb-md-0">
                             <i class="bi bi-graph-up"></i>
                             历史数据趋势
                         </h5>
-                        <div class="btn-group" role="group">
+                        <div class="btn-group btn-group-mobile" role="group">
                             <button type="button" class="btn btn-outline-primary btn-sm" onclick="loadHistory(1)">1小时</button>
                             <button type="button" class="btn btn-outline-primary btn-sm" onclick="loadHistory(6)">6小时</button>
                             <button type="button" class="btn btn-outline-primary btn-sm active" onclick="loadHistory(24)">24小时</button>
@@ -110,40 +144,30 @@
             </div>
         </div>
 
-        <!-- 数据刷新控制 -->
+        <!-- 数据下载功能 -->
         <div class="row mb-4">
             <div class="col-12">
                 <div class="card">
                     <div class="card-header">
                         <h5 class="mb-0">
-                            <i class="bi bi-arrow-clockwise"></i>
-                            数据刷新
+                            <i class="bi bi-download"></i>
+                            数据导出
                         </h5>
                     </div>
-                    <div class="card-body">
-                        <div class="row align-items-center">
-                            <div class="col-md-6">
-                                <button class="btn btn-info" onclick="refreshData()">
-                                    <i class="bi bi-arrow-clockwise"></i>
-                                    手动刷新数据
-                                </button>
-                            </div>
-                            <div class="col-md-6 text-end">
-                                <div class="form-check form-switch d-inline-block">
-                                    <input class="form-check-input" type="checkbox" id="autoRefresh" checked>
-                                    <label class="form-check-label" for="autoRefresh">
-                                        自动刷新 (30秒)
-                                    </label>
-                                </div>
-                            </div>
-                        </div>
+                    <div class="card-body text-center">
+                        <p class="text-muted mb-3">导出指定时间范围内的温湿度数据为Excel文件</p>
+                        <button class="btn btn-success btn-lg" data-bs-toggle="modal" data-bs-target="#downloadModal">
+                            <i class="bi bi-file-earmark-excel"></i>
+                            下载Excel数据记录
+                        </button>
                     </div>
                 </div>
             </div>
         </div>
 
         <!-- 数据统计 -->
-        <div class="row mb-4">
+        <!-- 桌面端布局 -->
+        <div class="row mb-4 d-none d-md-flex">
             <div class="col-md-3">
                 <div class="card text-center">
                     <div class="card-body">
@@ -182,6 +206,83 @@
             </div>
         </div>
 
+        <!-- 移动端紧凑布局 -->
+        <div class="row mb-4 d-md-none mobile-stats-layout">
+            <div class="col-6 mb-3">
+                <div class="card text-center stats-card-mobile">
+                    <div class="card-body">
+                        <i class="bi bi-thermometer-low text-primary stats-icon-mobile"></i>
+                        <h6 class="card-title stats-title-mobile">最低温度</h6>
+                        <p class="card-text stats-value-mobile" id="min-temp-mobile">--°C</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-6 mb-3">
+                <div class="card text-center stats-card-mobile">
+                    <div class="card-body">
+                        <i class="bi bi-thermometer-high text-danger stats-icon-mobile"></i>
+                        <h6 class="card-title stats-title-mobile">最高温度</h6>
+                        <p class="card-text stats-value-mobile" id="max-temp-mobile">--°C</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-6">
+                <div class="card text-center stats-card-mobile">
+                    <div class="card-body">
+                        <i class="bi bi-droplet text-info stats-icon-mobile"></i>
+                        <h6 class="card-title stats-title-mobile">平均湿度</h6>
+                        <p class="card-text stats-value-mobile" id="avg-humidity-mobile">--%</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-6">
+                <div class="card text-center stats-card-mobile">
+                    <div class="card-body">
+                        <i class="bi bi-graph-up text-success stats-icon-mobile"></i>
+                        <h6 class="card-title stats-title-mobile">数据点数</h6>
+                        <p class="card-text stats-value-mobile" id="data-count-mobile">--</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 下载数据弹窗 -->
+        <div class="modal fade" id="downloadModal" tabindex="-1" aria-labelledby="downloadModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="downloadModalLabel">
+                            <i class="bi bi-file-earmark-excel"></i>
+                            下载Excel数据
+                        </h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="alert alert-info" id="dataRangeInfo">
+                            <i class="bi bi-info-circle"></i>
+                            <span id="dataRangeText">正在获取数据时间范围...</span>
+                        </div>
+                        <div class="mb-3">
+                            <label for="modalStartDate" class="form-label">开始日期时间</label>
+                            <input type="datetime-local" class="form-control" id="modalStartDate">
+                            <div class="form-text">选择要导出数据的开始时间</div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="modalEndDate" class="form-label">结束日期时间</label>
+                            <input type="datetime-local" class="form-control" id="modalEndDate">
+                            <div class="form-text">选择要导出数据的结束时间</div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">关闭</button>
+                        <button type="button" class="btn btn-primary" onclick="downloadExcelFromModal()">
+                            <i class="bi bi-file-earmark-excel"></i> 下载Excel
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <!-- 页脚 -->
         <footer class="row bg-light py-3 mt-5">
             <div class="col-12 text-center text-muted">
@@ -193,7 +294,7 @@
         </footer>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="{{ url_for('static', filename='vendor/bootstrap/js/bootstrap.bundle.min.js') }}"></script>
     <script src="{{ url_for('static', filename='js/app.js') }}"></script>
 </body>
 </html>

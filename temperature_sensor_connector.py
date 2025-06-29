@@ -527,5 +527,40 @@ class TemperatureDataStorage:
             logger.error(f"获取数据失败: {e}")
             return []
 
+    def get_data_time_range(self) -> dict:
+        """获取数据库中数据的时间范围"""
+        try:
+            conn = sqlite3.connect(self.db_path)
+            cursor = conn.cursor()
+
+            cursor.execute('''
+                SELECT MIN(timestamp), MAX(timestamp), COUNT(*)
+                FROM temperature_data
+            ''')
+
+            row = cursor.fetchone()
+            conn.close()
+
+            if row and row[0] and row[1]:
+                return {
+                    'earliest': row[0],
+                    'latest': row[1],
+                    'count': row[2]
+                }
+            else:
+                return {
+                    'earliest': None,
+                    'latest': None,
+                    'count': 0
+                }
+
+        except Exception as e:
+            logger.error(f"获取时间范围失败: {e}")
+            return {
+                'earliest': None,
+                'latest': None,
+                'count': 0
+            }
+
 if __name__ == "__main__":
     asyncio.run(main())

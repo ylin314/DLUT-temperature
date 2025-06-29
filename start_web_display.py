@@ -96,14 +96,22 @@ def main():
         print("=" * 50)
         
         # 启动Web服务器（仅Web界面，不启动监控）
-        socketio.run(
-            app, 
-            host='0.0.0.0', 
-            port=5000, 
-            debug=False,
-            allow_unsafe_werkzeug=True,
-            log_output=False
-        )
+        try:
+            # 优先使用eventlet
+            socketio.run(
+                app,
+                host='0.0.0.0',
+                port=5000,
+                debug=False,
+                log_output=False
+            )
+        except Exception as e:
+            print(f"❌ 启动失败: {e}")
+            print("\n🔧 可能的解决方案:")
+            print("1. 确保蓝牙已开启")
+            print("2. 检查防火墙设置")
+            print("3. 尝试以管理员身份运行")
+            input("\n按回车键退出...")
         
     except KeyboardInterrupt:
         print("\n⏹️  正在关闭Web服务...")
@@ -114,6 +122,7 @@ def main():
         print("1. 检查端口5000是否被占用")
         print("2. 检查防火墙设置")
         print("3. 确保已安装flask和flask-socketio")
+        print("4. 尝试安装eventlet: pip install eventlet")
         input("\n按回车键退出...")
 
 if __name__ == "__main__":

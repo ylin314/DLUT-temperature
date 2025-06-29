@@ -68,26 +68,13 @@ def main():
         print("=" * 50)
         
         # 启动Web服务器
-        try:
-            # 尝试使用eventlet (推荐)
-            socketio.run(
-                app, 
-                host='0.0.0.0', 
-                port=5000, 
-                debug=False,
-                use_reloader=False,
-                log_output=False
-            )
-        except Exception as e:
-            logger.warning(f"eventlet启动失败，尝试使用Werkzeug: {e}")
-            # 回退到Werkzeug
-            socketio.run(
-                app, 
-                host='0.0.0.0', 
-                port=5000, 
-                debug=False,
-                allow_unsafe_werkzeug=True
-            )
+        socketio.run(
+            app,
+            host='0.0.0.0',
+            port=5000,
+            debug=False,
+            log_output=False
+        )
             
     except ImportError as e:
         print("❌ 缺少依赖包，请安装:")

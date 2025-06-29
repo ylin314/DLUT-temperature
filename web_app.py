@@ -9,7 +9,10 @@ import asyncio
 import json
 import threading
 from datetime import datetime, timedelta
-from flask import Flask, render_template, jsonify, request
+import io
+import pandas as pd
+import xlsxwriter
+from flask import Flask, render_template, jsonify, request, send_file
 from flask_socketio import SocketIO, emit
 import logging
 
@@ -123,6 +126,119 @@ def get_status():
         'last_data_time': latest_data.timestamp.isoformat() if latest_data and latest_data.timestamp else None
     })
 
+@app.route('/api/data-range')
+def get_data_range():
+    """获取数据库中数据的时间范围API"""
+    try:
+        time_range = monitor.storage.get_data_time_range()
+        return jsonify(time_range)
+    except Exception as e:
+        logger.error(f"获取数据时间范围失败: {e}")
+        return jsonify({'error': f'获取数据时间范围失败: {str(e)}'}), 500
+
+@app.route('/api/export-excel')
+def export_excel():
+    """导出Excel数据API"""
+    try:
+        start_time_str = request.args.get('start_time', None)
+        end_time_str = request.args.get('end_time', None)
+        
+        # 解析时间参数
+        if start_time_str:
+            start_time = datetime.fromisoformat(start_time_str.replace('Z', '+00:00'))
+        else:
+            start_time = datetime.now() - timedelta(days=1)  # 默认导出过去一天数据
+            
+        if end_time_str:
+            end_time = datetime.fromisoformat(end_time_str.replace('Z', '+00:00'))
+        else:
+            end_time = datetime.now()
+            
+        # 获取数据
+        data = monitor.storage.get_data_by_time_range(start_time, end_time)
+        
+        if not data:
+            return jsonify({'error': '指定时间范围内无数据'}), 404
+            
+        # 创建DataFrame
+        df = pd.DataFrame(data)
+        
+        # 创建一个内存文件作为Excel输出
+        output = io.BytesIO()
+        
+        # 创建Excel工作簿和工作表
+        with pd.ExcelWriter(output, engine='xlsxwriter') as writer:
+            # 写入数据
+            df.to_excel(writer, sheet_name='温湿度数据', index=False)
+            
+            # 获取工作簿和工作表对象
+            workbook = writer.book
+            worksheet = writer.sheets['温湿度数据']
+            
+            # 添加图表
+            chart = workbook.add_chart({'type': 'line'})
+            
+            # 配置图表数据范围
+            # 假设第一列是时间戳，第二列是温度，第三列是湿度
+            # 添加温度数据系列
+            chart.add_series({
+                'name': '温度',
+                'categories': ['温湿度数据', 1, 0, len(data), 0],  # 时间列
+                'values': ['温湿度数据', 1, 1, len(data), 1],      # 温度列
+                'line': {'color': '#ff6b6b'},
+            })
+            
+            # 添加湿度数据系列
+            chart.add_series({
+                'name': '湿度',
+                'categories': ['温湿度数据', 1, 0, len(data), 0],  # 时间列
+                'values': ['温湿度数据', 1, 2, len(data), 2],      # 湿度列
+                'line': {'color': '#74b9ff'},
+            })
+            
+            # 设置图表标题和坐标轴
+            chart.set_title({'name': 'CUST宿舍温湿度变化图'})
+            chart.set_x_axis({'name': '时间'})
+            chart.set_y_axis({'name': '数值', 'major_gridlines': {'visible': True}})
+            
+            # 插入图表到工作表
+            worksheet.insert_chart('E2', chart, {'x_scale': 2, 'y_scale': 1})
+            
+            # 设置列宽
+            worksheet.set_column('A:A', 20)  # 时间戳列宽
+            worksheet.set_column('B:C', 10)  # 温度湿度列宽
+            
+            # 添加格式
+            header_format = workbook.add_format({
+                'bold': True,
+                'text_wrap': True,
+                'valign': 'top',
+                'align': 'center',
+                'bg_color': '#D7E4BC',
+                'border': 1
+            })
+            
+            # 应用表头格式
+            for col_num, value in enumerate(df.columns.values):
+                worksheet.write(0, col_num, value, header_format)
+        
+        # 准备文件下载
+        output.seek(0)
+        
+        # 生成文件名，格式为"CUST温湿度数据_起始时间_结束时间.xlsx"
+        filename = f"CUST温湿度数据_{start_time.strftime('%Y%m%d%H%M')}_{end_time.strftime('%Y%m%d%H%M')}.xlsx"
+        
+        return send_file(
+            output, 
+            mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            as_attachment=True,
+            download_name=filename
+        )
+        
+    except Exception as e:
+        logger.error(f"导出Excel失败: {e}")
+        return jsonify({'error': f'导出Excel失败: {str(e)}'}), 500
+
 # 设备控制API已移除 - Web页面仅用于数据展示
 
 @socketio.on('connect')
@@ -167,7 +283,7 @@ if __name__ == '__main__':
         logger.info("启动CUST宿舍实时温度监控Web应用")
         logger.info("访问地址: http://localhost:5000")
         
-        socketio.run(app, host='0.0.0.0', port=5000, debug=False, allow_unsafe_werkzeug=True)
+        socketio.run(app, host='0.0.0.0', port=5000, debug=False)
         
     except KeyboardInterrupt:
         logger.info("正在关闭应用...")

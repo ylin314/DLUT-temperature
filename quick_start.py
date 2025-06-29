@@ -4,10 +4,6 @@
 CUST宿舍实时温度监控 - 快速启动脚本
 一键启动Web界面和温度监控
 """
-
-import sys
-import os
-import subprocess
 import webbrowser
 import time
 import threading
@@ -87,11 +83,10 @@ def main():
         
         # 启动Web服务器
         socketio.run(
-            app, 
-            host='0.0.0.0', 
-            port=5000, 
+            app,
+            host='0.0.0.0',
+            port=5000,
             debug=False,
-            allow_unsafe_werkzeug=True,
             log_output=False
         )
         
