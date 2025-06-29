@@ -1,0 +1,30 @@
+{
+  "school": {
+    "name_zh": "长春理工大学",
+    "name_en": "Changchun University of Science and Technology",
+    "short_name_zh": "CUST",
+    "short_name_en": "CUST",
+    "favicon_url": "https://cust.edu.cn/favicon.ico",
+    "website": "https://cust.edu.cn",
+    "location_zh": "宿舍",
+    "location_en": "Dormitory"
+  },
+  "app": {
+    "title_zh": "实时温度",
+    "title_en": "Real-time Temperature",
+    "description_zh": "宿舍环境数据展示",
+    "description_en": "Dormitory Environment Data Display",
+    "footer_text_zh": "宿舍环境数据实时查看平台",
+    "footer_text_en": "Real-time Dormitory Environment Data Platform",
+    "powered_by": "Powered by itdong.me",
+    "powered_by_url": "https://itdong.me"
+  },
+  "features": {
+    "enable_language_switch": true,
+    "default_language": "zh",
+    "supported_languages": ["zh", "en"],
+    "enable_online_users": true,
+    "enable_data_export": true,
+    "enable_statistics": true
+  }
+}

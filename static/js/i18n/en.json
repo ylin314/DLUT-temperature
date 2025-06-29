@@ -1,0 +1,97 @@
+{
+  "header": {
+    "title": "{{school_short}} {{location}} {{app_title}}",
+    "description": "{{school_name}} {{app_description}}"
+  },
+  "status": {
+    "connection": "Connection",
+    "device": "Device",
+    "last_update": "Last Update",
+    "online_users": "Online Users",
+    "connected": "Connected",
+    "disconnected": "Disconnected",
+    "unknown": "Unknown",
+    "connection_failed": "Connection Failed"
+  },
+  "data": {
+    "temperature": "Temperature",
+    "humidity": "Humidity",
+    "trend": {
+      "stable": "Stable",
+      "rising": "Rising",
+      "falling": "Falling"
+    }
+  },
+  "chart": {
+    "title": "Historical Data Trends",
+    "time_ranges": {
+      "1h": "1 Hour",
+      "6h": "6 Hours",
+      "24h": "24 Hours", 
+      "7d": "7 Days"
+    },
+    "axes": {
+      "time": "Time",
+      "temperature": "Temperature (°C)",
+      "humidity": "Humidity (%)"
+    },
+    "tooltip": {
+      "time": "Time",
+      "temperature_unit": "°C",
+      "humidity_unit": "%"
+    }
+  },
+  "statistics": {
+    "min_temp": "Min Temp",
+    "max_temp": "Max Temp",
+    "avg_humidity": "Avg Humidity", 
+    "data_count": "Data Points"
+  },
+  "export": {
+    "title": "Data Export",
+    "description": "Export temperature and humidity data within specified time range to Excel file",
+    "button": "Download Excel Data Records",
+    "modal": {
+      "title": "Download Excel Data",
+      "start_date": "Start Date Time",
+      "end_date": "End Date Time",
+      "start_help": "Select the start time for data export",
+      "end_help": "Select the end time for data export",
+      "close": "Close",
+      "download": "Download Excel",
+      "loading": "Getting data time range...",
+      "no_data": "No data records available",
+      "data_info": "Database contains <strong>{{count}}</strong> records<br>Time range: {{start}} to {{end}}"
+    },
+    "notifications": {
+      "preparing": "Preparing Excel file, please wait...",
+      "success": "Excel file downloaded successfully",
+      "error": "Download failed: {{error}}",
+      "invalid_dates": "Please select start and end time",
+      "invalid_range": "Start time cannot be later than end time"
+    }
+  },
+  "footer": {
+    "copyright": "© 2025 {{school_short}} {{location}} {{app_title}} Data Display | {{school_short}}",
+    "description": "{{footer_text}}",
+    "powered_by": "{{powered_by}}"
+  },
+  "language": {
+    "switch": "语言",
+    "chinese": "中文",
+    "english": "English"
+  },
+  "console": {
+    "websocket_connected": "WebSocket connected successfully",
+    "websocket_disconnected": "WebSocket disconnected",
+    "received_data": "Received temperature data",
+    "system_status": "System status",
+    "online_users_update": "Online users update",
+    "load_initial_failed": "Failed to load initial data",
+    "load_history_failed": "Failed to load historical data",
+    "chart_optimization": "Mobile chart optimization: Screen width={{width}}px, Time range={{hours}}h, Original data={{original}} points, Target points={{target}}",
+    "data_insufficient": "Data points ({{actual}}) less than target ({{target}}), returning all data",
+    "sampling_complete": "Sampling complete: {{original}} -> {{sampled}} points",
+    "system_initialized": "{{school_short}} {{location}} Real-time Temperature Monitoring System Initialized"
+  }
+}

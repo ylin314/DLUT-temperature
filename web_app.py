@@ -5,6 +5,8 @@ CUST宿舍实时温度监控Web应用
 提供实时温度数据的Web界面
 """
 
+# 注意：为了避免eventlet的兼容性问题，我们使用threading模式
+
 import asyncio
 import json
 import threading
@@ -25,7 +27,23 @@ logger = logging.getLogger(__name__)
 # 创建Flask应用
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'cust_temperature_monitor_2024'
-socketio = SocketIO(app, cors_allowed_origins="*")
+# 创建SocketIO实例，修复WebSocket连接问题
+# 使用threading模式，避免eventlet的复杂性和兼容性问题
+async_mode = 'threading'
+logger.info("使用threading异步模式（稳定性优先）")
+
+socketio = SocketIO(
+    app,
+    cors_allowed_origins="*",
+    ping_timeout=60,        # ping超时时间
+    ping_interval=25,       # ping间隔时间
+    logger=False,           # 生产环境关闭详细日志
+    engineio_logger=False,  # 关闭引擎日志
+    async_mode=async_mode,  # 使用threading模式
+    manage_session=False,   # 禁用会话管理避免冲突
+    transports=['websocket', 'polling'],  # 明确指定传输方式
+    always_connect=False    # 避免自动连接问题
+)
 
 # 全局变量
 connector = None
@@ -66,15 +84,18 @@ class TemperatureMonitor:
         
         # 设置数据回调
         def on_data_received(data: TemperatureData):
-            global latest_data
-            latest_data = data
-            logger.info(f"接收到数据: {data}")
-            
-            # 保存到数据库
-            self.storage.save_data(data)
-            
-            # 通过WebSocket发送给前端
-            socketio.emit('temperature_update', data.to_dict())
+            try:
+                global latest_data
+                latest_data = data
+                logger.info(f"接收到数据: {data}")
+
+                # 保存到数据库
+                self.storage.save_data(data)
+
+                # 通过WebSocket发送给前端
+                socketio.emit('temperature_update', data.to_dict())
+            except Exception as e:
+                logger.error(f"数据处理错误: {e}")
         
         self.connector.set_data_callback(on_data_received)
         
@@ -244,50 +265,72 @@ def export_excel():
 @socketio.on('connect')
 def handle_connect():
     """WebSocket连接处理"""
-    global online_users
-    online_users += 1
-    logger.info(f'客户端已连接，当前在线人数: {online_users}')
+    try:
+        global online_users
+        online_users += 1
+        logger.info(f'客户端已连接，当前在线人数: {online_users}')
 
-    # 发送系统状态
-    emit('status', {
-        'is_connected': monitor.connector.is_connected if monitor.connector else False,
-        'device_name': monitor.connector.current_device_name if monitor.connector else None
-    })
+        # 发送系统状态
+        emit('status', {
+            'is_connected': monitor.connector.is_connected if monitor.connector else False,
+            'device_name': monitor.connector.current_device_name if monitor.connector else None
+        })
 
-    # 广播在线人数更新给所有客户端
-    socketio.emit('online_users_update', {'online_users': online_users})
+        # 广播在线人数更新给所有客户端
+        socketio.emit('online_users_update', {'online_users': online_users})
+    except Exception as e:
+        logger.error(f"WebSocket连接处理错误: {e}")
 
 @socketio.on('disconnect')
 def handle_disconnect():
     """WebSocket断开处理"""
-    global online_users
-    online_users = max(0, online_users - 1)  # 确保不会小于0
-    logger.info(f'客户端已断开，当前在线人数: {online_users}')
+    try:
+        global online_users
+        online_users = max(0, online_users - 1)  # 确保不会小于0
+        logger.info(f'客户端已断开，当前在线人数: {online_users}')
 
-    # 广播在线人数更新给所有客户端
-    socketio.emit('online_users_update', {'online_users': online_users})
+        # 广播在线人数更新给所有客户端
+        socketio.emit('online_users_update', {'online_users': online_users})
+    except Exception as e:
+        logger.error(f"WebSocket断开处理错误: {e}")
 
 @socketio.on('request_latest')
 def handle_request_latest():
     """处理获取最新数据请求"""
-    global latest_data
-    if latest_data:
-        emit('temperature_update', latest_data.to_dict())
+    try:
+        global latest_data
+        if latest_data:
+            emit('temperature_update', latest_data.to_dict())
+    except Exception as e:
+        logger.error(f"处理最新数据请求错误: {e}")
 
 if __name__ == '__main__':
     try:
         # 启动监控服务
         monitor.start()
-        
+
         # 启动Web服务器
         logger.info("启动CUST宿舍实时温度监控Web应用")
         logger.info("访问地址: http://localhost:5000")
-        
-        socketio.run(app, host='0.0.0.0', port=5000, debug=False)
-        
+        logger.info(f"使用异步模式: {async_mode}")
+
+        # 统一的启动配置，避免模式特定的问题
+        socketio.run(
+            app,
+            host='0.0.0.0',
+            port=5000,
+            debug=False,
+            use_reloader=False,
+            log_output=False
+        )
+
     except KeyboardInterrupt:
         logger.info("正在关闭应用...")
         monitor.stop()
     except Exception as e:
         logger.error(f"应用启动失败: {e}")
+        logger.error("可能的解决方案:")
+        logger.error("1. 安装eventlet: pip install eventlet")
+        logger.error("2. 检查端口5000是否被占用")
+        logger.error("3. 确保所有依赖包已正确安装")
         monitor.stop()

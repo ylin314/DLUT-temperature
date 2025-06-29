@@ -1,0 +1,86 @@
+{
+  "_comment": "这是配置文件示例，展示如何为不同学校定制系统",
+  "_instructions": "复制此文件为 static/config.json 并修改相应配置",
+  
+  "school": {
+    "_comment": "学校基本信息配置",
+    "name_zh": "你的大学名称",
+    "name_en": "Your University Name",
+    "short_name_zh": "大学简称",
+    "short_name_en": "UNI",
+    "favicon_url": "https://your-university.edu.cn/favicon.ico",
+    "website": "https://your-university.edu.cn",
+    "location_zh": "宿舍",
+    "location_en": "Dormitory"
+  },
+  
+  "app": {
+    "_comment": "应用程序配置",
+    "title_zh": "实时温度",
+    "title_en": "Real-time Temperature",
+    "description_zh": "宿舍环境数据展示",
+    "description_en": "Dormitory Environment Data Display",
+    "footer_text_zh": "宿舍环境数据实时查看平台",
+    "footer_text_en": "Real-time Dormitory Environment Data Platform",
+    "powered_by": "Powered by Your Organization",
+    "powered_by_url": "https://your-organization.com"
+  },
+  
+  "features": {
+    "_comment": "功能开关配置",
+    "enable_language_switch": true,
+    "default_language": "zh",
+    "supported_languages": ["zh", "en"],
+    "enable_online_users": true,
+    "enable_data_export": true,
+    "enable_statistics": true
+  },
+  
+  "_examples": {
+    "_comment": "以下是一些常见学校的配置示例",
+    
+    "北京大学": {
+      "school": {
+        "name_zh": "北京大学",
+        "name_en": "Peking University",
+        "short_name_zh": "北大",
+        "short_name_en": "PKU",
+        "favicon_url": "https://www.pku.edu.cn/favicon.ico",
+        "website": "https://www.pku.edu.cn"
+      }
+    },
+    
+    "清华大学": {
+      "school": {
+        "name_zh": "清华大学", 
+        "name_en": "Tsinghua University",
+        "short_name_zh": "清华",
+        "short_name_en": "THU",
+        "favicon_url": "https://www.tsinghua.edu.cn/favicon.ico",
+        "website": "https://www.tsinghua.edu.cn"
+      }
+    },
+    
+    "复旦大学": {
+      "school": {
+        "name_zh": "复旦大学",
+        "name_en": "Fudan University", 
+        "short_name_zh": "复旦",
+        "short_name_en": "FDU",
+        "favicon_url": "https://www.fudan.edu.cn/favicon.ico",
+        "website": "https://www.fudan.edu.cn"
+      }
+    },
+    
+    "上海交通大学": {
+      "school": {
+        "name_zh": "上海交通大学",
+        "name_en": "Shanghai Jiao Tong University",
+        "short_name_zh": "上交",
+        "short_name_en": "SJTU", 
+        "favicon_url": "https://www.sjtu.edu.cn/favicon.ico",
+        "website": "https://www.sjtu.edu.cn"
+      }
+    }
+  }
+}

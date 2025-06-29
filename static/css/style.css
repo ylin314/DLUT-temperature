@@ -1062,3 +1062,78 @@ footer {
         font-size: 1.1rem;
     }
 }
+
+/* 语言切换器样式 */
+.language-switcher {
+    z-index: 1000;
+}
+
+.language-switcher .btn {
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    background: rgba(255, 255, 255, 0.1);
+    color: white;
+    font-size: 0.85rem;
+    padding: 4px 8px;
+    transition: all 0.3s ease;
+}
+
+.language-switcher .btn:hover {
+    background: rgba(255, 255, 255, 0.2);
+    border-color: rgba(255, 255, 255, 0.5);
+    color: white;
+}
+
+.language-switcher .dropdown-menu {
+    min-width: 120px;
+    border: none;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.language-switcher .dropdown-item {
+    font-size: 0.9rem;
+    padding: 8px 16px;
+    transition: all 0.2s ease;
+}
+
+.language-switcher .dropdown-item:hover {
+    background-color: #f8f9fa;
+}
+
+.language-switcher .dropdown-item.active {
+    background-color: #007bff;
+    color: white;
+}
+
+/* 移动端语言切换器优化 */
+@media (max-width: 768px) {
+    .language-switcher {
+        top: 5px !important;
+        right: 10px !important;
+    }
+
+    .language-switcher .btn {
+        font-size: 0.75rem;
+        padding: 3px 6px;
+    }
+}
+
+@media (max-width: 576px) {
+    .language-switcher {
+        top: 3px !important;
+        right: 8px !important;
+    }
+
+    .language-switcher .btn {
+        font-size: 0.7rem;
+        padding: 2px 5px;
+    }
+
+    .language-switcher .dropdown-menu {
+        min-width: 100px;
+    }
+
+    .language-switcher .dropdown-item {
+        font-size: 0.8rem;
+        padding: 6px 12px;
+    }
+}

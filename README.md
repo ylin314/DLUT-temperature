@@ -1,10 +1,16 @@
-# CUST宿舍实时温度监控系统
+# 智能温湿度监控系统
 
-> 长春理工大学宿舍环境数据采集与展示解决方案
+> 基于蓝牙BLE技术的通用温湿度监控解决方案
 
-基于蓝牙低功耗(BLE)技术的智能温湿度监控系统，专为宿舍环境设计，提供实时数据采集、存储和Web可视化展示。
+一个功能完整的智能温湿度监控系统，支持多品牌蓝牙设备，提供实时数据采集、存储和Web可视化展示。**支持国际化多语言界面，可快速配置为任何学校或机构使用**。
 
 ## ✨ 核心特性
+
+### 🌍 国际化与配置化
+- **多语言支持** - 内置中文/英文界面，支持动态语言切换
+- **学校定制** - 一键配置学校名称、图标、链接等信息
+- **通用模板** - 可快速适配任何学校或机构使用
+- **品牌配置** - 支持自定义页脚、技术支持等信息
 
 ### 🔗 智能连接
 - **自动设备发现** - 智能扫描附近的蓝牙温湿度计
@@ -16,13 +22,13 @@
 - **实时采集** - 持续监控温湿度变化，数据更新频率可配置
 - **本地存储** - SQLite数据库安全存储历史数据
 - **数据完整性** - 包含温度、湿度、电池电量、时间戳等完整信息
-- **历史查询** - 支持按时间范围查询历史数据
+- **数据导出** - 支持Excel格式数据导出，可选择时间范围
 
 ### 🌐 Web展示界面
-- **实时监控** - "CUST宿舍实时温度"主题的专业监控界面
 - **响应式设计** - 完美适配手机、平板、电脑等各种设备
-- **数据可视化** - Chart.js驱动的实时温湿度趋势图表
-- **WebSocket推送** - 毫秒级实时数据更新，无需刷新页面
+- **实时监控** - WebSocket驱动的毫秒级实时数据更新
+- **数据可视化** - Chart.js驱动的智能图表，支持移动端优化
+- **在线人数** - 实时显示当前访问人数
 
 ### 🏗️ 架构设计
 - **服务分离** - 数据采集与Web展示服务独立运行
@@ -63,6 +69,53 @@ cd custTemperature
 pip install -r requirements.txt
 ```
 
+### ⚙️ 快速配置（适配其他学校）
+
+**1. 复制配置模板**
+```bash
+cp config.example.json static/config.json
+```
+
+**2. 编辑学校信息**
+```json
+{
+  "school": {
+    "name_zh": "你的大学名称",
+    "name_en": "Your University Name",
+    "short_name_zh": "大学简称",
+    "short_name_en": "UNI",
+    "favicon_url": "https://your-university.edu.cn/favicon.ico",
+    "location_zh": "宿舍",
+    "location_en": "Dormitory"
+  },
+  "app": {
+    "powered_by": "Powered by Your IT Department",
+    "powered_by_url": "https://your-university.edu"
+  }
+}
+```
+
+**3. 常见学校配置示例**
+```json
+// 北京大学
+{
+  "school": {
+    "name_zh": "北京大学", "name_en": "Peking University",
+    "short_name_zh": "北大", "short_name_en": "PKU",
+    "favicon_url": "https://www.pku.edu.cn/favicon.ico"
+  }
+}
+
+// 清华大学
+{
+  "school": {
+    "name_zh": "清华大学", "name_en": "Tsinghua University",
+    "short_name_zh": "清华", "short_name_en": "THU",
+    "favicon_url": "https://www.tsinghua.edu.cn/favicon.ico"
+  }
+}
+```
+
 ### 🎮 启动方式
 
 #### 方式一：分离式启动（推荐生产环境）
@@ -80,25 +133,16 @@ python start_data_collector.py
 ```bash
 python start_web_display.py
 ```
-- ✅ 启动"CUST宿舍实时温度"Web界面
+- ✅ 启动多语言Web界面
 - ✅ 仅数据展示，不干扰设备连接
 - ✅ 自动打开浏览器访问
 - ✅ 支持局域网多设备访问
 
 #### 方式二：一键启动（推荐个人使用）
 ```bash
-python quick_start.py
+python run_web_server.py
 ```
-或双击运行：`启动CUST温度监控.bat`
-
-#### 方式三：交互式启动
-```bash
-python start_monitor.py
-```
-提供三种运行模式选择：
-1. **仅数据采集** - 后台采集，无Web界面
-2. **完整服务** - 数据采集 + Web展示
-3. **数据查看** - 查看历史数据统计
+或双击运行：`启动Web数据展示.bat`
 
 ### 🌐 Web界面访问
 
@@ -114,21 +158,30 @@ http://[你的IP地址]:5000
 
 ## 📱 Web界面功能
 
-### 实时监控面板
-- **温度显示** - 大字体实时温度显示，支持华氏度切换
-- **湿度显示** - 实时湿度百分比，舒适度指示
-- **设备状态** - 连接状态、设备名称、信号强度
+### 🌍 国际化界面
+- **多语言切换** - 右上角一键切换中文/英文
+- **语言记忆** - 自动保存用户语言偏好
+- **本地化显示** - 时间、数字格式本地化
+- **浏览器适配** - 自动检测浏览器语言设置
 
-### 数据可视化
-- **实时图表** - 温湿度变化趋势实时更新
-- **历史数据** - 可选择1小时、6小时、24小时、7天等时间范围
-- **数据导出** - 支持CSV格式数据导出
+### 📊 实时监控面板
+- **温度显示** - 大字体实时温度显示，趋势指示
+- **湿度显示** - 实时湿度百分比，趋势指示
+- **设备状态** - 连接状态、设备名称、最后更新时间
+- **在线人数** - 实时显示当前访问人数
+
+### 📈 数据可视化
+- **智能图表** - 温湿度变化趋势实时更新
+- **时间范围** - 可选择1小时、6小时、24小时、7天
+- **移动优化** - 移动设备智能采样，PC设备10分钟间隔
+- **数据导出** - 支持Excel格式，可选择时间范围
 - **统计信息** - 最高、最低、平均值统计
 
-### 响应式设计
-- **手机适配** - 完美适配各种手机屏幕
+### 📱 响应式设计
+- **手机适配** - 紧凑布局，左右排列优化
 - **平板优化** - 平板设备专门优化布局
 - **桌面版本** - 大屏幕多列布局展示
+- **触摸友好** - 移动设备触摸操作优化
 
 ## 🔧 API接口
 
@@ -136,11 +189,13 @@ http://[你的IP地址]:5000
 - `GET /api/latest` - 获取最新温湿度数据
 - `GET /api/history?hours=24` - 获取指定时间范围的历史数据
 - `GET /api/status` - 获取设备连接状态和系统信息
+- `GET /api/data-range` - 获取数据库中数据的时间范围
+- `GET /api/export-excel` - 导出Excel格式数据
 
 ### WebSocket事件
 - `temperature_update` - 实时温湿度数据推送
-- `connection_status` - 设备连接状态变化
-- `device_info` - 设备信息更新
+- `status` - 设备连接状态变化
+- `online_users_update` - 在线用户数量更新
 
 ## 💻 开发者指南
 
@@ -402,31 +457,148 @@ CREATE TABLE temperature_data (
 custTemperature/
 ├── 📄 README.md                       # 项目说明文档
 ├── 📄 requirements.txt                # Python依赖包列表
+├── 📄 config.example.json             # 配置文件示例
 ├── 🐍 temperature_sensor_connector.py # 核心连接器和数据存储类
 ├── 🌐 web_app.py                      # Flask Web应用服务器
-├── 🚀 quick_start.py                  # 一键启动脚本
+├── 🚀 run_web_server.py               # Web服务器启动脚本
 ├── 📊 start_data_collector.py         # 数据采集服务启动器
 ├── 🖥️ start_web_display.py           # Web展示服务启动器
-├── ⚙️ start_monitor.py                # 交互式启动脚本
-├── 📝 example_usage.py                # 使用示例代码
 ├── 🖼️ templates/
-│   └── index.html                     # Web界面HTML模板
+│   └── index.html                     # Web界面HTML模板（支持i18n）
 ├── 🎨 static/
+│   ├── config.json                    # 学校配置文件
 │   ├── css/
-│   │   └── style.css                  # 界面样式文件
-│   └── js/
-│       └── app.js                     # 前端JavaScript逻辑
+│   │   └── style.css                  # 界面样式文件（响应式）
+│   ├── js/
+│   │   ├── app.js                     # 前端JavaScript逻辑
+│   │   ├── i18n.js                    # 国际化管理器
+│   │   └── i18n/
+│   │       ├── zh.json                # 中文语言包
+│   │       └── en.json                # 英文语言包
+│   └── vendor/                        # 第三方库（本地化）
+│       ├── bootstrap/                 # Bootstrap CSS/JS
+│       ├── bootstrap-icons/           # Bootstrap图标
+│       ├── chartjs/                   # Chart.js图表库
+│       └── socketio/                  # Socket.IO客户端
 ├── 🗄️ temperature_data.db             # SQLite数据库（自动创建）
-├── 📋 temperature_monitor.log         # 系统日志文件（自动创建）
-├── 🖱️ 启动CUST温度监控.bat           # Windows一键启动脚本
 └── 🖱️ 启动Web数据展示.bat            # Windows Web服务启动脚本
 ```
+
+## 🌍 国际化与配置化
+
+### 配置文件说明
+
+**主配置文件**: `static/config.json`
+
+```json
+{
+  "school": {
+    "name_zh": "学校中文名称",
+    "name_en": "School English Name",
+    "short_name_zh": "中文简称",
+    "short_name_en": "EN",
+    "favicon_url": "https://school.edu.cn/favicon.ico",
+    "website": "https://school.edu.cn",
+    "location_zh": "位置描述",
+    "location_en": "Location Description"
+  },
+  "app": {
+    "title_zh": "实时温度",
+    "title_en": "Real-time Temperature",
+    "description_zh": "环境数据展示",
+    "description_en": "Environment Data Display",
+    "footer_text_zh": "环境数据实时查看平台",
+    "footer_text_en": "Real-time Environment Data Platform",
+    "powered_by": "Powered by Your Organization",
+    "powered_by_url": "https://your-organization.com"
+  },
+  "features": {
+    "enable_language_switch": true,
+    "default_language": "zh",
+    "supported_languages": ["zh", "en"],
+    "enable_online_users": true,
+    "enable_data_export": true,
+    "enable_statistics": true
+  }
+}
+```
+
+### 语言包结构
+
+**中文语言包**: `static/js/i18n/zh.json`
+**英文语言包**: `static/js/i18n/en.json`
+
+支持的翻译键：
+- `header.*` - 页面头部
+- `status.*` - 状态指示器
+- `data.*` - 数据显示
+- `chart.*` - 图表相关
+- `statistics.*` - 统计信息
+- `export.*` - 数据导出
+- `footer.*` - 页脚信息
+
+### 快速适配步骤
+
+1. **复制配置模板**
+   ```bash
+   cp config.example.json static/config.json
+   ```
+
+2. **修改学校信息**
+   - 更新学校名称（中英文）
+   - 设置学校图标URL
+   - 配置技术支持信息
+
+3. **自定义功能**
+   - 启用/禁用语言切换
+   - 设置默认语言
+   - 控制功能模块显示
+
+4. **测试验证**
+   - 启动Web服务
+   - 测试语言切换
+   - 验证配置生效
+
+### 扩展语言支持
+
+添加新语言（如日语）：
+
+1. 创建语言文件 `static/js/i18n/ja.json`
+2. 复制现有语言文件结构并翻译
+3. 更新配置文件：
+   ```json
+   {
+     "features": {
+       "supported_languages": ["zh", "en", "ja"]
+     }
+   }
+   ```
 
 ## 🔍 故障排除
 
 ### 常见问题
 
-**1. 蓝牙连接失败**
+**1. 语言切换不生效**
+```
+❌ 错误: 点击语言切换器无反应或显示错误
+```
+**解决方案:**
+- 检查 `static/config.json` 文件是否存在且格式正确
+- 确认 `enable_language_switch` 设置为 `true`
+- 清除浏览器缓存并刷新页面
+- 检查浏览器控制台是否有JavaScript错误
+
+**2. 配置文件不生效**
+```
+❌ 错误: 修改配置后界面没有变化
+```
+**解决方案:**
+- 确保配置文件路径正确：`static/config.json`
+- 检查JSON格式是否正确（可使用在线JSON验证器）
+- 重启Web服务器
+- 清除浏览器缓存
+
+**3. 蓝牙连接失败**
 ```
 ❌ 错误: 无法连接到设备
 ```
@@ -437,7 +609,7 @@ custTemperature/
 - 确认设备距离在2-10米有效范围内
 - 检查设备是否已被其他程序占用
 
-**2. Web界面无法访问**
+**4. Web界面无法访问**
 ```
 ❌ 错误: 无法访问 http://localhost:5000
 ```
@@ -447,17 +619,17 @@ custTemperature/
 - 尝试使用管理员权限运行程序
 - 检查网络适配器设置，确保本地回环正常
 
-**3. 数据采集中断**
+**5. 数据导出失败**
 ```
-❌ 错误: 设备连接丢失
+❌ 错误: Excel文件下载失败
 ```
 **解决方案:**
-- 检查温湿度计电池电量（低于20%可能影响连接稳定性）
-- 确认设备距离在有效范围内，避免障碍物遮挡
-- 检查系统资源占用，确保CPU和内存充足
-- 查看日志文件 `temperature_monitor.log` 排查具体错误原因
+- 检查数据库中是否有数据记录
+- 确认选择的时间范围内有数据
+- 检查磁盘空间是否充足
+- 尝试选择较小的时间范围
 
-**4. 依赖包安装失败**
+**6. 依赖包安装失败**
 ```
 ❌ 错误: pip install 失败
 ```
@@ -519,13 +691,33 @@ findstr "2024-06-29" temperature_monitor.log
 
 ## 📞 联系方式
 
-- **项目主页**: [GitHub Repository](https://github.com/your-repo/custTemperature)
-- **问题反馈**: [Issues](https://github.com/your-repo/custTemperature/issues)
-- **技术支持**: 长春理工大学计算机科学技术学院
+- **项目主页**: [GitHub Repository](https://github.com/your-repo/temperature-monitor)
+- **问题反馈**: [Issues](https://github.com/your-repo/temperature-monitor/issues)
+- **技术支持**: 开源社区维护
+
+## 🎯 适用场景
+
+- **高校宿舍** - 学生宿舍环境监控
+- **办公室** - 办公环境舒适度监控
+- **实验室** - 精密设备环境监控
+- **家庭** - 智能家居环境管理
+- **机房** - 服务器环境监控
+- **仓库** - 存储环境监控
+
+## 🏆 项目特色
+
+- ✅ **开箱即用** - 无需复杂配置，快速部署
+- ✅ **国际化支持** - 多语言界面，全球适用
+- ✅ **高度可配置** - 一键适配任何机构
+- ✅ **响应式设计** - 完美适配各种设备
+- ✅ **实时性强** - WebSocket实时数据推送
+- ✅ **数据完整** - 完整的数据采集和存储
+- ✅ **易于扩展** - 模块化设计，便于二次开发
 
 ---
 
 <div align="center">
-  <strong>🌡️ CUST宿舍实时温度监控系统</strong><br>
-  <em>让宿舍环境数据可视化，让生活更智能</em>
+  <strong>🌡️ 智能温湿度监控系统</strong><br>
+  <em>让环境数据可视化，让监控更智能</em><br><br>
+  <strong>🌍 支持国际化 | 📱 响应式设计 | ⚙️ 高度可配置</strong>
 </div>

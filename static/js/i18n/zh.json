@@ -1,0 +1,97 @@
+{
+  "header": {
+    "title": "{{school_short}} {{location}}{{app_title}}",
+    "description": "{{school_name}}{{app_description}}"
+  },
+  "status": {
+    "connection": "连接状态",
+    "device": "设备名称",
+    "last_update": "最后更新",
+    "online_users": "在线人数",
+    "connected": "已连接",
+    "disconnected": "未连接",
+    "unknown": "未知",
+    "connection_failed": "连接失败"
+  },
+  "data": {
+    "temperature": "温度",
+    "humidity": "湿度",
+    "trend": {
+      "stable": "稳定",
+      "rising": "上升",
+      "falling": "下降"
+    }
+  },
+  "chart": {
+    "title": "历史数据趋势",
+    "time_ranges": {
+      "1h": "1小时",
+      "6h": "6小时", 
+      "24h": "24小时",
+      "7d": "7天"
+    },
+    "axes": {
+      "time": "时间",
+      "temperature": "温度 (°C)",
+      "humidity": "湿度 (%)"
+    },
+    "tooltip": {
+      "time": "时间",
+      "temperature_unit": "°C",
+      "humidity_unit": "%"
+    }
+  },
+  "statistics": {
+    "min_temp": "最低温度",
+    "max_temp": "最高温度", 
+    "avg_humidity": "平均湿度",
+    "data_count": "数据点数"
+  },
+  "export": {
+    "title": "数据导出",
+    "description": "导出指定时间范围内的温湿度数据为Excel文件",
+    "button": "下载Excel数据记录",
+    "modal": {
+      "title": "下载Excel数据",
+      "start_date": "开始日期时间",
+      "end_date": "结束日期时间",
+      "start_help": "选择要导出数据的开始时间",
+      "end_help": "选择要导出数据的结束时间",
+      "close": "关闭",
+      "download": "下载Excel",
+      "loading": "正在获取数据时间范围...",
+      "no_data": "暂无数据记录",
+      "data_info": "数据库中共有 <strong>{{count}}</strong> 条记录<br>时间范围：{{start}} 至 {{end}}"
+    },
+    "notifications": {
+      "preparing": "正在准备Excel文件，请稍候...",
+      "success": "Excel文件下载成功",
+      "error": "下载失败: {{error}}",
+      "invalid_dates": "请选择开始和结束时间",
+      "invalid_range": "开始时间不能晚于结束时间"
+    }
+  },
+  "footer": {
+    "copyright": "© 2025 {{school_short}}{{location}}{{app_title}}数据展示 | {{school_short}}",
+    "description": "{{footer_text}}",
+    "powered_by": "{{powered_by}}"
+  },
+  "language": {
+    "switch": "Language",
+    "chinese": "中文",
+    "english": "English"
+  },
+  "console": {
+    "websocket_connected": "WebSocket连接成功",
+    "websocket_disconnected": "WebSocket连接断开",
+    "received_data": "接收到温度数据",
+    "system_status": "系统状态",
+    "online_users_update": "在线人数更新",
+    "load_initial_failed": "加载初始数据失败",
+    "load_history_failed": "加载历史数据失败",
+    "chart_optimization": "移动设备图表优化: 屏幕宽度={{width}}px, 时间范围={{hours}}小时, 原始数据={{original}}点, 目标点数={{target}}点",
+    "data_insufficient": "数据点数量({{actual}})少于目标点数({{target}})，返回所有数据",
+    "sampling_complete": "采样完成: {{original}} -> {{sampled}} 点",
+    "system_initialized": "{{school_short}}{{location}}实时温度监控系统已初始化"
+  }
+}

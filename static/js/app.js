@@ -1,44 +1,224 @@
-// CUST宿舍实时温度监控系统 JavaScript
+// 温度监控系统 JavaScript
 
 class TemperatureMonitor {
     constructor() {
-        this.socket = io();
+        // 优化Socket.IO配置，适配nginx代理
+        this.socket = io({
+            transports: ['websocket', 'polling'],  // 优先使用websocket
+            upgrade: true,
+            rememberUpgrade: true,
+            timeout: 20000,           // 连接超时20秒
+            forceNew: false,          // 重用连接
+            reconnection: true,       // 启用自动重连
+            reconnectionDelay: 1000,  // 重连延迟1秒
+            reconnectionAttempts: 5,  // 最多重连5次
+            maxReconnectionAttempts: 5
+        });
+
         this.chart = null;
         this.lastTemperature = null;
         this.lastHumidity = null;
         this.historyData = [];
-        
-        this.initializeSocket();
-        this.initializeChart();
-        this.loadInitialData();
-        this.setupResponsiveChart();
+
+        // 等待i18n初始化完成后再初始化组件
+        this.waitForI18n().then(() => {
+            this.initializeSocket();
+            this.initializeChart();
+            this.loadInitialData();
+            this.setupResponsiveChart();
+            this.setupLanguageChangeListener();
+
+            // 多次尝试更新图表标签，确保正确显示
+            this.ensureChartLabelsCorrect();
+        });
+    }
+
+    async waitForI18n() {
+        // 等待i18n初始化完成
+        while (!window.i18n || !window.i18n.currentLanguage) {
+            await new Promise(resolve => setTimeout(resolve, 100));
+        }
+
+        // 额外等待，确保翻译完全加载
+        await new Promise(resolve => setTimeout(resolve, 200));
+
+        // 调试信息：验证国际化系统状态
+        console.log('i18n系统初始化完成:', {
+            currentLanguage: window.i18n.currentLanguage,
+            translations: window.i18n.translations,
+            chartAxesTemp: window.i18n.t('chart.axes.temperature'),
+            chartAxesHumidity: window.i18n.t('chart.axes.humidity'),
+            chartAxesTime: window.i18n.t('chart.axes.time')
+        });
+    }
+
+    // 确保图表标签正确显示的方法
+    ensureChartLabelsCorrect() {
+        let attempts = 0;
+        const maxAttempts = 10;
+
+        const checkAndUpdate = () => {
+            attempts++;
+
+            // 检查翻译是否正确
+            const tempLabel = window.i18n.t('chart.axes.temperature');
+            const humidityLabel = window.i18n.t('chart.axes.humidity');
+            const timeLabel = window.i18n.t('chart.axes.time');
+
+            console.log(`第${attempts}次检查图表标签:`, {
+                temperature: tempLabel,
+                humidity: humidityLabel,
+                time: timeLabel,
+                isCorrect: !tempLabel.includes('chart.axes')
+            });
+
+            // 如果翻译正确（不包含键名），则更新图表
+            if (!tempLabel.includes('chart.axes') && !humidityLabel.includes('chart.axes') && !timeLabel.includes('chart.axes')) {
+                console.log('翻译正确，更新图表标签');
+                this.updateChartLabels();
+                return;
+            }
+
+            // 如果翻译还不正确且未达到最大尝试次数，继续尝试
+            if (attempts < maxAttempts) {
+                setTimeout(checkAndUpdate, 300);
+            } else {
+                console.warn('达到最大尝试次数，图表标签可能显示不正确');
+                // 强制更新一次
+                this.updateChartLabels();
+            }
+        };
+
+        // 立即开始第一次检查
+        checkAndUpdate();
+    }
+
+    setupLanguageChangeListener() {
+        window.addEventListener('languageChanged', (event) => {
+            // 语言切换时重新初始化图表标签
+            this.updateChartLabels();
+
+            // 强制更新所有状态标签
+            this.refreshAllStatusLabels();
+
+            // 重新请求数据以更新状态标签
+            this.socket.emit('request_latest');
+
+            // 重新加载当前时间范围的历史数据
+            const activeButton = document.querySelector('.btn-group .btn.active');
+            if (activeButton) {
+                const timeRange = this.getTimeRangeFromButton(activeButton);
+                this.loadHistory(timeRange);
+            }
+        });
+    }
+
+    getTimeRangeFromButton(button) {
+        const text = button.textContent.trim();
+        if (text.includes('1') && (text.includes('小时') || text.includes('Hour'))) return 1;
+        if (text.includes('6') && (text.includes('小时') || text.includes('Hours'))) return 6;
+        if (text.includes('24') && (text.includes('小时') || text.includes('Hours'))) return 24;
+        if (text.includes('7') && (text.includes('天') || text.includes('Days'))) return 168;
+        return 24; // 默认24小时
+    }
+
+    // 强制刷新所有状态标签
+    refreshAllStatusLabels() {
+        // 更新连接状态标签为未知状态
+        const connectionElements = [
+            document.getElementById('connection-status'),
+            document.getElementById('connection-status-mobile')
+        ];
+
+        connectionElements.forEach(element => {
+            if (element) {
+                element.textContent = window.i18n.t('status.unknown');
+                element.className = 'badge bg-secondary';
+            }
+        });
+
+        // 更新设备名称标签
+        const deviceElements = [
+            document.getElementById('device-name'),
+            document.getElementById('device-name-mobile')
+        ];
+
+        deviceElements.forEach(element => {
+            if (element) {
+                element.textContent = window.i18n.t('status.disconnected');
+                element.className = 'badge bg-info';
+            }
+        });
+
+        // 更新趋势标签
+        const tempTrendElements = [
+            document.getElementById('temperature-trend'),
+            document.getElementById('humidity-trend')
+        ];
+
+        tempTrendElements.forEach(element => {
+            if (element && element.innerHTML.includes('trend-')) {
+                const currentIcon = element.querySelector('i');
+                if (currentIcon) {
+                    let trendText = window.i18n.t('data.trend.stable');
+                    if (currentIcon.classList.contains('trend-up')) {
+                        trendText = window.i18n.t('data.trend.rising');
+                    } else if (currentIcon.classList.contains('trend-down')) {
+                        trendText = window.i18n.t('data.trend.falling');
+                    }
+
+                    const iconClass = currentIcon.className;
+                    element.innerHTML = `<i class="${iconClass}"></i> ${trendText}`;
+                }
+            }
+        });
     }
 
     // 初始化WebSocket连接
     initializeSocket() {
         this.socket.on('connect', () => {
-            console.log('WebSocket连接成功');
+            console.log(window.i18n.t('console.websocket_connected'));
             this.updateConnectionStatus(true);
             this.socket.emit('request_latest');
         });
 
-        this.socket.on('disconnect', () => {
-            console.log('WebSocket连接断开');
+        this.socket.on('disconnect', (reason) => {
+            console.log(window.i18n.t('console.websocket_disconnected'), 'Reason:', reason);
             this.updateConnectionStatus(false);
         });
 
+        // 添加重连事件监听
+        this.socket.on('reconnect', (attemptNumber) => {
+            console.log(`🔄 Reconnected after ${attemptNumber} attempts`);
+            this.socket.emit('request_latest');
+            this.updateConnectionStatus(true);
+        });
+
+        this.socket.on('reconnect_attempt', (attemptNumber) => {
+            console.log(`🔄 Reconnection attempt ${attemptNumber}`);
+        });
+
+        this.socket.on('reconnect_error', (error) => {
+            console.log('❌ Reconnection failed:', error);
+        });
+
+        this.socket.on('reconnect_failed', () => {
+            console.log('❌ Reconnection failed after maximum attempts');
+            this.showConnectionError();
+        });
+
         this.socket.on('temperature_update', (data) => {
-            console.log('接收到温度数据:', data);
+            console.log(window.i18n.t('console.received_data'), data);
             this.updateTemperatureData(data);
         });
 
         this.socket.on('status', (status) => {
-            console.log('系统状态:', status);
+            console.log(window.i18n.t('console.system_status'), status);
             this.updateSystemStatus(status);
         });
 
         this.socket.on('online_users_update', (data) => {
-            console.log('在线人数更新:', data);
+            console.log(window.i18n.t('console.online_users_update'), data);
             this.updateOnlineUsers(data.online_users);
         });
     }
@@ -46,12 +226,35 @@ class TemperatureMonitor {
     // 初始化图表
     initializeChart() {
         const ctx = document.getElementById('temperatureChart').getContext('2d');
+
+        // 调试信息：检查国际化系统状态
+        console.log('初始化图表时的i18n状态:', {
+            i18nExists: !!window.i18n,
+            currentLanguage: window.i18n?.currentLanguage,
+            temperatureLabel: window.i18n?.t('chart.axes.temperature'),
+            humidityLabel: window.i18n?.t('chart.axes.humidity')
+        });
+
+        // 获取翻译标签，如果失败则使用备用标签
+        const getTempLabel = () => {
+            const label = window.i18n.t('chart.axes.temperature');
+            return label.includes('chart.axes') ? '温度 (°C)' : label;
+        };
+        const getHumidityLabel = () => {
+            const label = window.i18n.t('chart.axes.humidity');
+            return label.includes('chart.axes') ? '湿度 (%)' : label;
+        };
+        const getTimeLabel = () => {
+            const label = window.i18n.t('chart.axes.time');
+            return label.includes('chart.axes') ? '时间' : label;
+        };
+
         this.chart = new Chart(ctx, {
             type: 'line',
             data: {
                 labels: [],
                 datasets: [{
-                    label: '温度 (°C)',
+                    label: getTempLabel(),
                     data: [],
                     borderColor: '#ff6b6b',
                     backgroundColor: 'rgba(255, 107, 107, 0.15)',
@@ -68,7 +271,7 @@ class TemperatureMonitor {
                     pointHoverBorderWidth: 3,
                     yAxisID: 'y'
                 }, {
-                    label: '湿度 (%)',
+                    label: getHumidityLabel(),
                     data: [],
                     borderColor: '#74b9ff',
                     backgroundColor: 'rgba(116, 185, 255, 0.15)',
@@ -104,7 +307,7 @@ class TemperatureMonitor {
                         display: true,
                         title: {
                             display: true,
-                            text: '时间',
+                            text: getTimeLabel(),
                             color: '#666',
                             font: {
                                 size: 12,
@@ -129,7 +332,7 @@ class TemperatureMonitor {
                         position: 'left',
                         title: {
                             display: true,
-                            text: '温度 (°C)',
+                            text: getTempLabel(),
                             color: '#ff6b6b',
                             font: {
                                 size: 12,
@@ -155,7 +358,7 @@ class TemperatureMonitor {
                         position: 'right',
                         title: {
                             display: true,
-                            text: '湿度 (%)',
+                            text: getHumidityLabel(),
                             color: '#74b9ff',
                             font: {
                                 size: 12,
@@ -204,7 +407,7 @@ class TemperatureMonitor {
                         intersect: false,
                         callbacks: {
                             title: function(context) {
-                                return '时间: ' + context[0].label;
+                                return window.i18n.t('chart.tooltip.time') + ': ' + context[0].label;
                             },
                             label: function(context) {
                                 let label = context.dataset.label || '';
@@ -213,9 +416,9 @@ class TemperatureMonitor {
                                 }
                                 label += context.parsed.y.toFixed(1);
                                 if (context.datasetIndex === 0) {
-                                    label += '°C';
+                                    label += window.i18n.t('chart.tooltip.temperature_unit');
                                 } else {
-                                    label += '%';
+                                    label += window.i18n.t('chart.tooltip.humidity_unit');
                                 }
                                 return label;
                             }
@@ -224,6 +427,58 @@ class TemperatureMonitor {
                 }
             }
         });
+
+        // 图表创建后立即更新标签，确保显示正确的翻译
+        this.updateChartLabels();
+    }
+
+    // 更新图表标签（语言切换时调用）
+    updateChartLabels() {
+        if (!this.chart) {
+            console.warn('图表未初始化，无法更新标签');
+            return;
+        }
+
+        // 获取翻译结果
+        const tempLabel = window.i18n.t('chart.axes.temperature');
+        const humidityLabel = window.i18n.t('chart.axes.humidity');
+        const timeLabel = window.i18n.t('chart.axes.time');
+
+        console.log('更新图表标签:', {
+            temperature: tempLabel,
+            humidity: humidityLabel,
+            time: timeLabel,
+            hasKeyNames: tempLabel.includes('chart.axes') || humidityLabel.includes('chart.axes') || timeLabel.includes('chart.axes')
+        });
+
+        // 如果翻译结果仍然包含键名，使用备用翻译
+        const finalTempLabel = tempLabel.includes('chart.axes') ? '温度 (°C)' : tempLabel;
+        const finalHumidityLabel = humidityLabel.includes('chart.axes') ? '湿度 (%)' : humidityLabel;
+        const finalTimeLabel = timeLabel.includes('chart.axes') ? '时间' : timeLabel;
+
+        // 更新数据集标签
+        if (this.chart.data.datasets[0]) {
+            this.chart.data.datasets[0].label = finalTempLabel;
+        }
+        if (this.chart.data.datasets[1]) {
+            this.chart.data.datasets[1].label = finalHumidityLabel;
+        }
+
+        // 更新坐标轴标题
+        if (this.chart.options.scales.x && this.chart.options.scales.x.title) {
+            this.chart.options.scales.x.title.text = finalTimeLabel;
+        }
+        if (this.chart.options.scales.y && this.chart.options.scales.y.title) {
+            this.chart.options.scales.y.title.text = finalTempLabel;
+        }
+        if (this.chart.options.scales.y1 && this.chart.options.scales.y1.title) {
+            this.chart.options.scales.y1.title.text = finalHumidityLabel;
+        }
+
+        // 更新图表，使用 'none' 模式强制立即更新
+        this.chart.update('none');
+
+        console.log('图表标签更新完成');
     }
 
     // 更新温度数据显示
@@ -270,22 +525,22 @@ class TemperatureMonitor {
         if (this.lastTemperature !== null && tempTrend) {
             const tempDiff = currentTemp - this.lastTemperature;
             if (Math.abs(tempDiff) < 0.1) {
-                tempTrend.innerHTML = '<i class="bi bi-dash trend-stable"></i> 稳定';
+                tempTrend.innerHTML = `<i class="bi bi-dash trend-stable"></i> ${window.i18n.t('data.trend.stable')}`;
             } else if (tempDiff > 0) {
-                tempTrend.innerHTML = '<i class="bi bi-arrow-up trend-up"></i> 上升';
+                tempTrend.innerHTML = `<i class="bi bi-arrow-up trend-up"></i> ${window.i18n.t('data.trend.rising')}`;
             } else {
-                tempTrend.innerHTML = '<i class="bi bi-arrow-down trend-down"></i> 下降';
+                tempTrend.innerHTML = `<i class="bi bi-arrow-down trend-down"></i> ${window.i18n.t('data.trend.falling')}`;
             }
         }
 
         if (this.lastHumidity !== null && humidityTrend) {
             const humidityDiff = currentHumidity - this.lastHumidity;
             if (Math.abs(humidityDiff) < 1) {
-                humidityTrend.innerHTML = '<i class="bi bi-dash trend-stable"></i> 稳定';
+                humidityTrend.innerHTML = `<i class="bi bi-dash trend-stable"></i> ${window.i18n.t('data.trend.stable')}`;
             } else if (humidityDiff > 0) {
-                humidityTrend.innerHTML = '<i class="bi bi-arrow-up trend-up"></i> 上升';
+                humidityTrend.innerHTML = `<i class="bi bi-arrow-up trend-up"></i> ${window.i18n.t('data.trend.rising')}`;
             } else {
-                humidityTrend.innerHTML = '<i class="bi bi-arrow-down trend-down"></i> 下降';
+                humidityTrend.innerHTML = `<i class="bi bi-arrow-down trend-down"></i> ${window.i18n.t('data.trend.falling')}`;
             }
         }
     }
@@ -330,8 +585,34 @@ class TemperatureMonitor {
         }
     }
 
+    // 显示连接错误
+    showConnectionError() {
+        // 可以在这里添加用户友好的错误提示
+        const errorMessage = window.i18n ? window.i18n.t('status.connection_failed') : 'Connection failed';
+        console.error(errorMessage);
+
+        // 可以添加页面提示
+        const statusElements = [
+            document.getElementById('connection-status'),
+            document.getElementById('connection-status-mobile')
+        ];
+
+        statusElements.forEach(element => {
+            if (element) {
+                element.textContent = errorMessage;
+                element.className = 'badge bg-danger';
+            }
+        });
+    }
+
     // 更新连接状态
     updateConnectionStatus(connected) {
+        // 确保i18n已初始化
+        if (!window.i18n || !window.i18n.currentLanguage) {
+            setTimeout(() => this.updateConnectionStatus(connected), 100);
+            return;
+        }
+
         // 桌面端元素
         const statusElement = document.getElementById('connection-status');
         const iconElement = document.getElementById('connection-icon');
@@ -340,7 +621,7 @@ class TemperatureMonitor {
         const statusElementMobile = document.getElementById('connection-status-mobile');
         const iconElementMobile = document.getElementById('connection-icon-mobile');
 
-        const statusText = connected ? '已连接' : '未连接';
+        const statusText = connected ? window.i18n.t('status.connected') : window.i18n.t('status.disconnected');
         const statusClass = connected ? 'badge bg-success' : 'badge bg-danger';
         const iconClass = connected ? 'bi bi-wifi connected' : 'bi bi-wifi-off disconnected';
 
@@ -368,10 +649,10 @@ class TemperatureMonitor {
         this.updateConnectionStatus(status.is_connected);
 
         // 更新设备名称
-        if (status.device_name) {
-            const deviceNameElement = document.getElementById('device-name');
-            const deviceNameElementMobile = document.getElementById('device-name-mobile');
+        const deviceNameElement = document.getElementById('device-name');
+        const deviceNameElementMobile = document.getElementById('device-name-mobile');
 
+        if (status.device_name) {
             const deviceText = status.device_name;
             const deviceClass = 'badge bg-success';
 
@@ -382,6 +663,21 @@ class TemperatureMonitor {
             if (deviceNameElementMobile) {
                 deviceNameElementMobile.textContent = deviceText;
                 deviceNameElementMobile.className = deviceClass;
+            }
+        } else {
+            // 确保i18n已初始化
+            if (window.i18n && window.i18n.currentLanguage) {
+                const disconnectedText = window.i18n.t('status.disconnected');
+                const disconnectedClass = 'badge bg-info';
+
+                if (deviceNameElement) {
+                    deviceNameElement.textContent = disconnectedText;
+                    deviceNameElement.className = disconnectedClass;
+                }
+                if (deviceNameElementMobile) {
+                    deviceNameElementMobile.textContent = disconnectedText;
+                    deviceNameElementMobile.className = disconnectedClass;
+                }
             }
         }
 
@@ -427,7 +723,7 @@ class TemperatureMonitor {
                 this.updateSystemStatus(status);
             }
         } catch (error) {
-            console.error('加载初始数据失败:', error);
+            console.error(window.i18n.t('console.load_initial_failed'), error);
         }
     }
 
@@ -450,7 +746,7 @@ class TemperatureMonitor {
                 }
             }
         } catch (error) {
-            console.error('加载历史数据失败:', error);
+            console.error(window.i18n.t('console.load_history_failed'), error);
         }
     }
 
@@ -542,6 +838,10 @@ class TemperatureMonitor {
         // 添加00:00时刻的竖虚线分割
         this.addMidnightLines(groupedData);
 
+        // 确保图表标签正确显示（防止被数据更新覆盖）
+        this.chart.data.datasets[0].label = window.i18n.t('chart.axes.temperature');
+        this.chart.data.datasets[1].label = window.i18n.t('chart.axes.humidity');
+
         this.chart.update('none'); // 使用 'none' 模式提高性能
     }
 
@@ -616,11 +916,19 @@ class TemperatureMonitor {
         targetPoints = Math.max(targetPoints, minPointsFor2Hours);
 
         // 调试信息
-        console.log(`移动设备图表优化: 屏幕宽度=${screenWidth}px, 时间范围=${timeRangeHours.toFixed(1)}小时, 原始数据=${sortedData.length}点, 目标点数=${targetPoints}点`);
+        console.log(window.i18n.t('console.chart_optimization', {
+            width: screenWidth,
+            hours: timeRangeHours.toFixed(1),
+            original: sortedData.length,
+            target: targetPoints
+        }));
 
         // 如果原始数据点数少于目标点数，直接返回所有数据
         if (sortedData.length <= targetPoints) {
-            console.log(`数据点数量(${sortedData.length})少于目标点数(${targetPoints})，返回所有数据`);
+            console.log(window.i18n.t('console.data_insufficient', {
+                actual: sortedData.length,
+                target: targetPoints
+            }));
             return sortedData.map(item => ({
                 temperature: parseFloat(item.temperature.toFixed(1)),
                 humidity: parseFloat(item.humidity.toFixed(1)),
@@ -630,7 +938,10 @@ class TemperatureMonitor {
 
         // 使用均匀采样算法
         const sampledData = this.uniformSample(sortedData, targetPoints);
-        console.log(`采样完成: ${sortedData.length} -> ${sampledData.length} 点`);
+        console.log(window.i18n.t('console.sampling_complete', {
+            original: sortedData.length,
+            sampled: sampledData.length
+        }));
         return sampledData;
     }
 
@@ -854,7 +1165,7 @@ async function initializeDownloadModal() {
         const modalEndDate = document.getElementById('modalEndDate');
 
         // 显示加载状态
-        dataRangeText.textContent = '正在获取数据时间范围...';
+        dataRangeText.textContent = window.i18n.t('export.modal.loading');
 
         try {
             const timeRange = await getDataTimeRange();
@@ -864,16 +1175,17 @@ async function initializeDownloadModal() {
                 const earliestDate = new Date(timeRange.earliest);
                 const latestDate = new Date(timeRange.latest);
 
-                dataRangeText.innerHTML = `
-                    数据库中共有 <strong>${timeRange.count}</strong> 条记录<br>
-                    时间范围：${earliestDate.toLocaleString('zh-CN')} 至 ${latestDate.toLocaleString('zh-CN')}
-                `;
+                dataRangeText.innerHTML = window.i18n.t('export.modal.data_info', {
+                    count: timeRange.count,
+                    start: earliestDate.toLocaleString(window.i18n.getCurrentLanguage() === 'zh' ? 'zh-CN' : 'en-US'),
+                    end: latestDate.toLocaleString(window.i18n.getCurrentLanguage() === 'zh' ? 'zh-CN' : 'en-US')
+                });
 
                 // 自动填入时间范围
                 modalStartDate.value = timeRange.earliest.slice(0, 16);
                 modalEndDate.value = timeRange.latest.slice(0, 16);
             } else {
-                dataRangeText.textContent = '暂无数据记录';
+                dataRangeText.textContent = window.i18n.t('export.modal.no_data');
                 // 设置默认值
                 const now = new Date();
                 const oneWeekAgo = new Date();
@@ -901,12 +1213,12 @@ function downloadExcelFromModal() {
 
     // 验证日期
     if (!startDateInput.value || !endDateInput.value) {
-        showNotification('请选择开始和结束时间', 'error');
+        showNotification(window.i18n.t('export.notifications.invalid_dates'), 'error');
         return;
     }
 
     if (startDate > endDate) {
-        showNotification('开始时间不能晚于结束时间', 'error');
+        showNotification(window.i18n.t('export.notifications.invalid_range'), 'error');
         return;
     }
 
@@ -928,7 +1240,7 @@ function downloadExcelWithDates(startDate, endDate) {
     const url = `/api/export-excel?start_time=${startDate.toISOString()}&end_time=${endDate.toISOString()}`;
 
     // 显示下载中通知
-    showNotification('正在准备Excel文件，请稍候...', 'info');
+    showNotification(window.i18n.t('export.notifications.preparing'), 'info');
 
     // 创建一个隐藏的a标签进行下载
     fetch(url)
@@ -956,18 +1268,27 @@ function downloadExcelWithDates(startDate, endDate) {
             window.URL.revokeObjectURL(url);
             document.body.removeChild(a);
 
-            showNotification('Excel文件下载成功', 'success');
+            showNotification(window.i18n.t('export.notifications.success'), 'success');
         })
         .catch(error => {
             console.error('下载Excel失败:', error);
-            showNotification(`下载失败: ${error.message}`, 'error');
+            showNotification(window.i18n.t('export.notifications.error', { error: error.message }), 'error');
         });
 }
 
 // 页面加载完成后初始化
 document.addEventListener('DOMContentLoaded', function() {
     window.temperatureMonitor = new TemperatureMonitor();
-    console.log('CUST宿舍实时温度监控系统已初始化');
+
+    // 等待i18n初始化完成后显示初始化消息
+    const checkI18n = () => {
+        if (window.i18n && window.i18n.currentLanguage) {
+            console.log(window.i18n.t('console.system_initialized'));
+        } else {
+            setTimeout(checkI18n, 100);
+        }
+    };
+    checkI18n();
 
     // 初始化下载弹窗
     initializeDownloadModal();
