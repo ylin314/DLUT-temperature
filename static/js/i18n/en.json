@@ -82,8 +82,8 @@
     "english": "English"
   },
   "console": {
-    "websocket_connected": "WebSocket connected successfully",
-    "websocket_disconnected": "WebSocket disconnected",
+    "websocket_connected": "Real-time connection established",
+    "websocket_disconnected": "Real-time connection disconnected",
     "received_data": "Received temperature data",
     "system_status": "System status",
     "online_users_update": "Online users update",

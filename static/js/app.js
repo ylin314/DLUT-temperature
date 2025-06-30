@@ -2,17 +2,23 @@
 
 class TemperatureMonitor {
     constructor() {
-        // 优化Socket.IO配置，适配nginx代理
+        // 优化Socket.IO配置，强制使用HTTP长轮询（修复WebSocket错误）
         this.socket = io({
-            transports: ['websocket', 'polling'],  // 优先使用websocket
-            upgrade: true,
-            rememberUpgrade: true,
-            timeout: 20000,           // 连接超时20秒
-            forceNew: false,          // 重用连接
-            reconnection: true,       // 启用自动重连
-            reconnectionDelay: 1000,  // 重连延迟1秒
-            reconnectionAttempts: 5,  // 最多重连5次
-            maxReconnectionAttempts: 5
+            transports: ['polling'],   // 仅使用HTTP长轮询，避免WebSocket问题
+            upgrade: false,            // 禁用协议升级
+            rememberUpgrade: false,    // 不记住升级状态
+            timeout: 20000,            // 连接超时20秒
+            forceNew: false,           // 重用连接
+            reconnection: true,        // 启用自动重连
+            reconnectionDelay: 1000,   // 重连延迟1秒
+            reconnectionAttempts: 5,   // 最多重连5次
+            maxReconnectionAttempts: 5,
+            // 长轮询优化配置
+            polling: {
+                extraHeaders: {
+                    'X-Polling-Mode': 'true'  // 标识使用长轮询模式
+                }
+            }
         });
 
         this.chart = null;
@@ -174,7 +180,7 @@ class TemperatureMonitor {
         });
     }
 
-    // 初始化WebSocket连接
+    // 初始化Socket.IO连接（HTTP长轮询模式）
     initializeSocket() {
         this.socket.on('connect', () => {
             console.log(window.i18n.t('console.websocket_connected'));

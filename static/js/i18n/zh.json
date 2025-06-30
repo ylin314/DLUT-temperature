@@ -82,8 +82,8 @@
     "english": "English"
   },
   "console": {
-    "websocket_connected": "WebSocket连接成功",
-    "websocket_disconnected": "WebSocket连接断开",
+    "websocket_connected": "实时连接已建立",
+    "websocket_disconnected": "实时连接已断开",
     "received_data": "接收到温度数据",
     "system_status": "系统状态",
     "online_users_update": "在线人数更新",

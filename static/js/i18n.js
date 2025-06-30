@@ -213,15 +213,69 @@ class I18nManager {
         // 创建语言切换器
         const languageSwitcher = this.createLanguageSwitcher();
 
-        // 将语言切换器添加到页面头部
-        const header = document.querySelector('header .col-12');
-        if (header && languageSwitcher) {
-            header.appendChild(languageSwitcher);
+        // 将语言切换器添加到"Powered by"链接的同一行
+        const poweredByLink = document.querySelector('#powered-by-link');
+        if (poweredByLink && languageSwitcher) {
+            // 在"Powered by"链接后添加分隔符和语言切换器
+            const separator = document.createTextNode(' | ');
+            const languageText = document.createElement('span');
+            languageText.className = 'footer-language-inline';
 
-            // 添加响应式监听，当窗口大小改变时更新按钮显示
-            this.setupResponsiveLanguageSwitcher(languageSwitcher);
-        } else if (!header) {
-            console.warn('Header element not found, language switcher not added');
+            // 将语言切换器的内容提取出来，作为内联元素
+            const button = languageSwitcher.querySelector('button');
+            if (button) {
+                // 创建简化的内联语言切换器
+                const inlineLanguageSwitcher = this.createInlineLanguageSwitcher();
+                languageText.appendChild(inlineLanguageSwitcher);
+
+                // 添加到"Powered by"链接后面
+                poweredByLink.parentNode.appendChild(separator);
+                poweredByLink.parentNode.appendChild(languageText);
+            }
+
+            // 添加响应式监听
+            this.setupResponsiveLanguageSwitcher(languageText);
+        } else if (!poweredByLink) {
+            console.warn('Footer powered-by link not found, language switcher not added');
+        }
+    }
+
+    createInlineLanguageSwitcher() {
+        try {
+            const supportedLanguages = this.config.features?.supported_languages || ['zh', 'en'];
+            if (supportedLanguages.length <= 1) {
+                return null;
+            }
+
+            // 创建简单的内联语言切换链接
+            const container = document.createElement('span');
+            container.className = 'language-switcher-inline';
+
+            supportedLanguages.forEach((lang, index) => {
+                if (index > 0) {
+                    const separator = document.createTextNode(' / ');
+                    container.appendChild(separator);
+                }
+
+                const link = document.createElement('a');
+                link.href = '#';
+                link.className = `language-link ${lang === this.currentLanguage ? 'active' : ''}`;
+                link.setAttribute('data-language', lang);
+                link.textContent = lang === 'zh' ? '中文' : 'English';
+
+                // 添加点击事件
+                link.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    this.switchLanguage(lang);
+                });
+
+                container.appendChild(link);
+            });
+
+            return container;
+        } catch (error) {
+            console.error('Failed to create inline language switcher:', error);
+            return null;
         }
     }
 
@@ -233,7 +287,7 @@ class I18nManager {
             }
 
             const switcher = document.createElement('div');
-            switcher.className = 'language-switcher position-absolute top-0 end-0 mt-2 me-3';
+            switcher.className = 'language-switcher';
             switcher.style.cssText = 'z-index: 1000;';
 
             const dropdown = document.createElement('div');
@@ -247,14 +301,15 @@ class I18nManager {
             const isMobile = window.innerWidth <= 768;
 
             if (isMobile) {
-                // 移动端：更紧凑的样式，只显示图标
-                button.className = 'btn btn-outline-light btn-sm dropdown-toggle px-2 py-1';
+                // 移动端：圆形按钮，只显示图标
+                button.className = 'btn btn-outline-secondary btn-sm dropdown-toggle';
                 button.innerHTML = `<i class="bi bi-globe"></i>`;
                 button.setAttribute('title', this.getCurrentLanguageDisplayName()); // 添加提示文本
-                button.style.cssText = 'min-width: auto; border-radius: 50%; width: 32px; height: 32px;';
+                // CSS样式由CSS文件控制，确保圆形显示
+                button.style.cssText = '';
             } else {
                 // 桌面端：标准样式，显示图标和文字
-                button.className = 'btn btn-outline-light btn-sm dropdown-toggle';
+                button.className = 'btn btn-outline-secondary btn-sm dropdown-toggle';
                 button.innerHTML = `<i class="bi bi-globe"></i> ${this.getCurrentLanguageDisplayName()}`;
             }
 
@@ -293,33 +348,8 @@ class I18nManager {
     }
 
     setupResponsiveLanguageSwitcher(languageSwitcher) {
-        const button = languageSwitcher.querySelector('button');
-        if (!button) return;
-
-        const updateButtonDisplay = () => {
-            const isMobile = window.innerWidth <= 768;
-
-            if (isMobile) {
-                // 移动端：紧凑样式，只显示图标
-                button.className = 'btn btn-outline-light btn-sm dropdown-toggle px-2 py-1';
-                button.innerHTML = `<i class="bi bi-globe"></i>`;
-                button.setAttribute('title', this.getCurrentLanguageDisplayName());
-                button.style.cssText = 'min-width: auto; border-radius: 50%; width: 32px; height: 32px;';
-            } else {
-                // 桌面端：标准样式，显示图标和文字
-                button.className = 'btn btn-outline-light btn-sm dropdown-toggle';
-                button.innerHTML = `<i class="bi bi-globe"></i> ${this.getCurrentLanguageDisplayName()}`;
-                button.removeAttribute('title');
-                button.style.cssText = '';
-            }
-        };
-
-        // 监听窗口大小变化
-        let resizeTimeout;
-        window.addEventListener('resize', () => {
-            clearTimeout(resizeTimeout);
-            resizeTimeout = setTimeout(updateButtonDisplay, 150); // 防抖处理
-        });
+        // 内联语言切换器不需要复杂的响应式处理
+        // CSS已经处理了不同屏幕尺寸的样式
     }
 
     async switchLanguage(language) {
@@ -337,35 +367,13 @@ class I18nManager {
             // 重新应用翻译
             this.applyTranslations();
 
-            // 更新语言切换器按钮文本（考虑移动端显示）
-            const switcherButton = document.querySelector('.language-switcher .btn');
-            if (switcherButton) {
-                const isMobile = window.innerWidth <= 768;
-
-                if (isMobile) {
-                    // 移动端：紧凑样式，只显示图标
-                    switcherButton.className = 'btn btn-outline-light btn-sm dropdown-toggle px-2 py-1';
-                    switcherButton.innerHTML = `<i class="bi bi-globe"></i>`;
-                    switcherButton.setAttribute('title', this.getCurrentLanguageDisplayName());
-                    switcherButton.style.cssText = 'min-width: auto; border-radius: 50%; width: 32px; height: 32px;';
-                } else {
-                    // 桌面端：标准样式，显示图标和文字
-                    switcherButton.className = 'btn btn-outline-light btn-sm dropdown-toggle';
-                    switcherButton.innerHTML = `<i class="bi bi-globe"></i> ${this.getCurrentLanguageDisplayName()}`;
-                    switcherButton.removeAttribute('title');
-                    switcherButton.style.cssText = '';
-                }
-            }
-
-            // 更新语言切换器状态
-            const languageSwitcher = document.querySelector('.language-switcher');
-            if (languageSwitcher) {
-                document.querySelectorAll('.language-switcher .dropdown-item').forEach(item => {
-                    item.classList.remove('active');
-
-                    // 使用数据属性来识别对应的语言菜单项
-                    if (item.getAttribute('data-language') === language) {
-                        item.classList.add('active');
+            // 更新内联语言切换器状态
+            const languageLinks = document.querySelectorAll('.language-link');
+            if (languageLinks.length > 0) {
+                languageLinks.forEach(link => {
+                    link.classList.remove('active');
+                    if (link.getAttribute('data-language') === language) {
+                        link.classList.add('active');
                     }
                 });
             }

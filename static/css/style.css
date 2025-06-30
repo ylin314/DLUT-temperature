@@ -1063,24 +1063,60 @@ footer {
     }
 }
 
-/* 语言切换器样式 */
+/* 页脚布局优化 */
+.footer-powered-by {
+    font-size: 0.875rem;
+}
+
+.footer-language {
+    margin-left: auto;
+}
+
+/* 内联语言切换器样式 */
+.footer-language-inline {
+    font-size: 0.875rem;
+}
+
+.language-switcher-inline {
+    display: inline;
+}
+
+.language-link {
+    color: #6c757d;
+    text-decoration: none;
+    font-size: inherit;
+    transition: color 0.2s ease;
+}
+
+.language-link:hover {
+    color: #495057;
+    text-decoration: underline;
+}
+
+.language-link.active {
+    color: #007bff;
+    font-weight: 500;
+}
+
+/* 语言切换器样式 - 页脚版本 */
 .language-switcher {
     z-index: 1000;
 }
 
 .language-switcher .btn {
-    border: 1px solid rgba(255, 255, 255, 0.3);
-    background: rgba(255, 255, 255, 0.1);
-    color: white;
-    font-size: 0.85rem;
-    padding: 4px 8px;
+    border: 1px solid #6c757d;
+    background: transparent;
+    color: #6c757d;
+    font-size: 0.8rem;
+    padding: 2px 8px;
     transition: all 0.3s ease;
+    border-radius: 15px;
 }
 
 .language-switcher .btn:hover {
-    background: rgba(255, 255, 255, 0.2);
-    border-color: rgba(255, 255, 255, 0.5);
-    color: white;
+    background: #e9ecef;
+    border-color: #495057;
+    color: #495057;
 }
 
 .language-switcher .dropdown-menu {
@@ -1104,36 +1140,23 @@ footer {
     color: white;
 }
 
-/* 移动端语言切换器优化 */
+/* 移动端页脚布局优化 */
 @media (max-width: 768px) {
-    .language-switcher {
-        top: 5px !important;
-        right: 10px !important;
+    .footer-language-inline {
+        font-size: 0.8rem;
     }
 
-    .language-switcher .btn {
-        font-size: 0.75rem;
-        padding: 3px 6px;
+    .language-link {
+        font-size: 0.8rem;
     }
 }
 
 @media (max-width: 576px) {
-    .language-switcher {
-        top: 3px !important;
-        right: 8px !important;
+    .footer-language-inline {
+        font-size: 0.75rem;
     }
 
-    .language-switcher .btn {
-        font-size: 0.7rem;
-        padding: 2px 5px;
-    }
-
-    .language-switcher .dropdown-menu {
-        min-width: 100px;
-    }
-
-    .language-switcher .dropdown-item {
-        font-size: 0.8rem;
-        padding: 6px 12px;
+    .language-link {
+        font-size: 0.75rem;
     }
 }
