@@ -25,6 +25,7 @@ class TemperatureMonitor {
         this.lastTemperature = null;
         this.lastHumidity = null;
         this.historyData = [];
+        this.currentTimeRange = 24; // 默认24小时
 
         // 等待i18n初始化完成后再初始化组件
         this.waitForI18n().then(() => {
@@ -740,6 +741,7 @@ class TemperatureMonitor {
             if (response.ok) {
                 const data = await response.json();
                 this.historyData = data; // 保存历史数据
+                this.currentTimeRange = hours; // 保存当前时间范围
                 this.updateChart(data);
                 this.updateStatistics(data);
 
@@ -761,11 +763,26 @@ class TemperatureMonitor {
         const isMobile = window.innerWidth <= 768;
         let groupedData;
 
-        if (isMobile) {
-            // 小型设备：使用智能采样算法
+        // 一小时数据特殊处理
+        if (this.currentTimeRange === 1) {
+            if (isMobile) {
+                // 移动端：5分钟间隔采样（一小时12个点）
+                console.log('移动端一小时数据：使用5分钟间隔采样');
+                groupedData = this.groupDataByTimeInterval(data.reverse(), 5);
+            } else {
+                // PC端：显示全部数据点
+                console.log('PC端一小时数据：显示全部数据点，不进行采样');
+                groupedData = data.reverse().map(item => ({
+                    temperature: parseFloat(item.temperature.toFixed(1)),
+                    humidity: parseFloat(item.humidity.toFixed(1)),
+                    timestamp: new Date(item.timestamp)
+                }));
+            }
+        } else if (isMobile) {
+            // 其他时间范围：小型设备使用智能采样算法
             groupedData = this.smartSampleForMobile(data.reverse());
         } else {
-            // PC大屏：按十分钟间隔对数据进行分组和平均
+            // 其他时间范围：PC大屏按十分钟间隔对数据进行分组和平均
             groupedData = this.groupDataByTimeInterval(data.reverse(), 10);
         }
 
@@ -1098,6 +1115,7 @@ class TemperatureMonitor {
             resizeTimeout = setTimeout(() => {
                 if (this.chart && this.historyData.length > 0) {
                     // 重新更新图表以适应新的屏幕尺寸
+                    console.log(`响应式更新图表，当前时间范围: ${this.currentTimeRange} 小时`);
                     this.updateChart(this.historyData);
                 }
             }, 250);
@@ -1113,6 +1131,7 @@ class TemperatureMonitor {
  */
 function loadHistory(hours) {
     if (window.temperatureMonitor) {
+        console.log(`加载 ${hours} 小时历史数据`);
         window.temperatureMonitor.loadHistory(hours);
     }
 }
