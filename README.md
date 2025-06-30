@@ -1,4 +1,4 @@
-# 智能温湿度监控系统
+# 🌡️ 智能温湿度监控系统
 
 > 基于蓝牙BLE技术的通用温湿度监控解决方案
 
@@ -67,6 +67,16 @@ cd custTemperature
 
 # 安装依赖
 pip install -r requirements.txt
+```
+
+### 依赖包说明
+```
+bleak>=0.20.0          # 蓝牙低功耗库，用于BLE设备连接
+flask>=2.3.0           # Web框架
+flask-socketio>=5.3.0  # WebSocket支持
+python-socketio>=5.8.0 # Socket.IO客户端
+eventlet>=0.33.0       # 异步网络库
+python-engineio>=4.7.0 # Engine.IO支持
 ```
 
 ### ⚙️ 快速配置（适配其他学校）
@@ -144,6 +154,14 @@ python run_web_server.py
 ```
 或双击运行：`启动Web数据展示.bat`
 
+#### 方式三：快速启动（推荐新手）
+```bash
+python quick_start.py
+```
+- ✅ 自动检查依赖包
+- ✅ 一键启动完整服务
+- ✅ 自动打开浏览器
+
 ### 🌐 Web界面访问
 
 **本地访问**
@@ -159,7 +177,7 @@ http://[你的IP地址]:5000
 ## 📱 Web界面功能
 
 ### 🌍 国际化界面
-- **多语言切换** - 右上角一键切换中文/英文
+- **多语言切换** - 页脚一键切换中文/英文
 - **语言记忆** - 自动保存用户语言偏好
 - **本地化显示** - 时间、数字格式本地化
 - **浏览器适配** - 自动检测浏览器语言设置
@@ -168,7 +186,7 @@ http://[你的IP地址]:5000
 - **温度显示** - 大字体实时温度显示，趋势指示
 - **湿度显示** - 实时湿度百分比，趋势指示
 - **设备状态** - 连接状态、设备名称、最后更新时间
-- **在线人数** - 实时显示当前访问人数
+- **在线人数** - 实时显示当前访问人数（替代电池指示器）
 
 ### 📈 数据可视化
 - **智能图表** - 温湿度变化趋势实时更新
@@ -176,6 +194,7 @@ http://[你的IP地址]:5000
 - **移动优化** - 移动设备智能采样，PC设备10分钟间隔
 - **数据导出** - 支持Excel格式，可选择时间范围
 - **统计信息** - 最高、最低、平均值统计
+- **24小时默认** - 默认显示24小时数据，00:00分割线
 
 ### 📱 响应式设计
 - **手机适配** - 紧凑布局，左右排列优化
@@ -458,11 +477,14 @@ custTemperature/
 ├── 📄 README.md                       # 项目说明文档
 ├── 📄 requirements.txt                # Python依赖包列表
 ├── 📄 config.example.json             # 配置文件示例
+├── 📄 I18N_CONFIG_README.md           # 国际化配置说明文档
 ├── 🐍 temperature_sensor_connector.py # 核心连接器和数据存储类
 ├── 🌐 web_app.py                      # Flask Web应用服务器
 ├── 🚀 run_web_server.py               # Web服务器启动脚本
 ├── 📊 start_data_collector.py         # 数据采集服务启动器
 ├── 🖥️ start_web_display.py           # Web展示服务启动器
+├── ⚡ quick_start.py                  # 快速启动脚本（推荐新手）
+├── 🔧 install.py                      # 依赖安装脚本
 ├── 🖼️ templates/
 │   └── index.html                     # Web界面HTML模板（支持i18n）
 ├── 🎨 static/
@@ -475,7 +497,7 @@ custTemperature/
 │   │   └── i18n/
 │   │       ├── zh.json                # 中文语言包
 │   │       └── en.json                # 英文语言包
-│   └── vendor/                        # 第三方库（本地化）
+│   └── vendor/                        # 第三方库（本地化，避免CDN问题）
 │       ├── bootstrap/                 # Bootstrap CSS/JS
 │       ├── bootstrap-icons/           # Bootstrap图标
 │       ├── chartjs/                   # Chart.js图表库
@@ -638,6 +660,16 @@ custTemperature/
 - 使用国内镜像：`pip install -r requirements.txt -i https://pypi.tuna.tsinghua.edu.cn/simple/`
 - 检查Python版本是否为3.7+：`python --version`
 - 在虚拟环境中安装：`python -m venv venv && venv\Scripts\activate`
+- 或使用自动安装脚本：`python install.py`
+
+**7. CDN资源加载失败**
+```
+❌ 错误: 前端资源加载失败
+```
+**解决方案:**
+- 本项目已使用本地化资源，避免CDN问题
+- 如遇到问题，检查 `static/vendor/` 目录是否完整
+- 确保网络连接正常
 
 ### 性能优化建议
 
@@ -691,9 +723,10 @@ findstr "2024-06-29" temperature_monitor.log
 
 ## 📞 联系方式
 
-- **项目主页**: [GitHub Repository](https://github.com/your-repo/temperature-monitor)
-- **问题反馈**: [Issues](https://github.com/your-repo/temperature-monitor/issues)
+- **项目主页**: [GitHub Repository](https://github.com/your-repo/custTemperature)
+- **问题反馈**: [Issues](https://github.com/your-repo/custTemperature/issues)
 - **技术支持**: 开源社区维护
+- **配置文档**: 详见 [I18N_CONFIG_README.md](I18N_CONFIG_README.md)
 
 ## 🎯 适用场景
 
@@ -713,11 +746,35 @@ findstr "2024-06-29" temperature_monitor.log
 - ✅ **实时性强** - WebSocket实时数据推送
 - ✅ **数据完整** - 完整的数据采集和存储
 - ✅ **易于扩展** - 模块化设计，便于二次开发
+- ✅ **本地化资源** - 避免CDN问题，适合国内使用
+- ✅ **多种启动方式** - 适合不同用户需求
+
+## 🌟 更新日志
+
+### v2.0.0 (最新版本)
+- ✨ 新增国际化(i18n)支持，支持中英文切换
+- ✨ 新增学校配置化功能，可快速适配任何学校
+- ✨ 新增在线用户数显示功能
+- ✨ 新增24小时默认图表显示，00:00分割线
+- ✨ 新增移动端自适应数据采样
+- ✨ 新增本地化前端资源，避免CDN问题
+- 🔧 优化响应式布局，改进移动端体验
+- 🔧 优化数据导出功能，支持模态弹窗
+- 🔧 优化连接稳定性和重连机制
+
+### v1.0.0
+- 🎉 初始版本发布
+- 📡 基础蓝牙BLE连接功能
+- 📊 Web数据展示界面
+- 💾 SQLite数据存储
 
 ---
 
 <div align="center">
   <strong>🌡️ 智能温湿度监控系统</strong><br>
   <em>让环境数据可视化，让监控更智能</em><br><br>
-  <strong>🌍 支持国际化 | 📱 响应式设计 | ⚙️ 高度可配置</strong>
+  <strong>🌍 支持国际化 | 📱 响应式设计 | ⚙️ 高度可配置</strong><br><br>
+  <img src="https://img.shields.io/badge/Python-3.7+-blue.svg" alt="Python Version">
+  <img src="https://img.shields.io/badge/License-MIT-green.svg" alt="License">
+  <img src="https://img.shields.io/badge/Platform-Windows-lightgrey.svg" alt="Platform">
 </div>
