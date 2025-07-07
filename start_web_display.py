@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-CUST宿舍实时温度数据展示Web服务
+DLUT宿舍实时温度数据展示Web服务
 仅用于数据展示，不包含设备控制功能
 """
 
@@ -26,7 +26,7 @@ def open_browser():
     """延迟打开浏览器"""
     time.sleep(2)
     try:
-        webbrowser.open('http://localhost:5000')
+        webbrowser.open('http://localhost:5001')
         logger.info("🌐 浏览器已自动打开")
     except Exception as e:
         logger.warning(f"无法自动打开浏览器: {e}")
@@ -54,9 +54,9 @@ def check_dependencies():
 
 def main():
     """主函数"""
-    print("📊 CUST宿舍实时温度数据展示")
+    print("📊 DLUT宿舍实时温度数据展示")
     print("=" * 50)
-    print("长春理工大学宿舍环境数据查看平台")
+    print("大连理工大学宿舍环境数据查看平台")
     print()
     
     # 检查依赖
@@ -79,8 +79,8 @@ def main():
         print("🎉 Web服务启动成功！")
         print()
         print("📱 数据展示地址:")
-        print("   本地访问: http://localhost:5000")
-        print("   局域网访问: http://[你的IP地址]:5000")
+        print("   本地访问: http://localhost:5001")
+        print("   局域网访问: http://[你的IP地址]:5001")
         print()
         print("📊 功能说明:")
         print("   • 实时温度湿度数据展示")
@@ -101,7 +101,7 @@ def main():
             socketio.run(
                 app,
                 host='0.0.0.0',
-                port=5000,
+                port=5001,
                 debug=False,
                 log_output=False
             )
@@ -119,7 +119,7 @@ def main():
     except Exception as e:
         print(f"❌ Web服务启动失败: {e}")
         print("\n🔧 可能的解决方案:")
-        print("1. 检查端口5000是否被占用")
+        print("1. 检查端口5001是否被占用")
         print("2. 检查防火墙设置")
         print("3. 确保已安装flask和flask-socketio")
         print("4. 尝试安装eventlet: pip install eventlet")

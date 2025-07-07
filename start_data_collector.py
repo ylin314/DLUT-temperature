@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-CUST宿舍温度数据采集服务
+DLUT宿舍温度数据采集服务
 专门用于连接温度计设备并采集数据，不包含Web界面
 """
 
@@ -37,7 +37,7 @@ class TemperatureDataCollector:
         
     async def start(self):
         """启动数据采集服务"""
-        logger.info("🌡️ 启动CUST宿舍温度数据采集服务")
+        logger.info("🌡️ 启动DLUT宿舍温度数据采集服务")
         logger.info("=" * 60)
         
         # 设置数据回调
@@ -126,9 +126,9 @@ def check_dependencies():
 
 async def main():
     """主函数"""
-    print("🌡️ CUST宿舍温度数据采集服务")
+    print("🌡️ DLUT宿舍温度数据采集服务")
     print("=" * 50)
-    print("长春理工大学宿舍环境数据采集程序")
+    print("大连理工大学宿舍环境数据采集程序")
     print()
     
     # 检查依赖

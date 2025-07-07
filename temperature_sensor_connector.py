@@ -26,6 +26,11 @@ except ImportError:
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
+# 设置设备名称
+with open('./static/config.json', 'r', encoding='utf-8') as f:
+    data = json.load(f)
+    device_name = data['server']['device_name']
+
 @dataclass
 class TemperatureData:
     """温度湿度数据结构"""
@@ -335,7 +340,16 @@ class TemperatureSensorConnector:
                     devices = await self.scan_devices(timeout=10)
 
                     if devices:
+                        # 尝试连接指定设备号设备
+                        for de in devices:
+                            if de['name'] == device_name:
+                                device = de
+                                print("找到指定设备:", device_name)
+                                logger.info(f"尝试连接设备: {device['name']}")
+                                await self.connect(device['address'], device['name'])
+                                return
                         # 尝试连接第一个设备
+                        print("未找到指定设备，尝试连接第一个设备")
                         device = devices[0]
                         logger.info(f"尝试连接设备: {device['name']}")
                         await self.connect(device['address'], device['name'])

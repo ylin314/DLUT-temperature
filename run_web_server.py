@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-CUST宿舍实时温度监控Web服务器启动脚本
+DLUT宿舍实时温度监控Web服务器启动脚本
 使用更适合的WSGI服务器
 """
 
@@ -26,16 +26,16 @@ def open_browser():
     """延迟打开浏览器"""
     time.sleep(2)  # 等待服务器启动
     try:
-        webbrowser.open('http://localhost:5000')
+        webbrowser.open('http://localhost:5001')
         logger.info("🌐 浏览器已自动打开")
     except Exception as e:
         logger.warning(f"无法自动打开浏览器: {e}")
 
 def main():
     """主函数"""
-    print("🌡️ CUST宿舍实时温度监控Web服务器")
+    print("🌡️ DLUT宿舍实时温度监控Web服务器")
     print("=" * 50)
-    print("长春理工大学宿舍环境监测Web界面")
+    print("大连理工大学宿舍环境监测Web界面")
     print()
     
     try:
@@ -54,8 +54,8 @@ def main():
         print("✅ 服务器启动成功！")
         print()
         print("📱 访问地址:")
-        print("   本地访问: http://localhost:5000")
-        print("   局域网访问: http://[你的IP地址]:5000")
+        print("   本地访问: http://localhost:5001")
+        print("   局域网访问: http://[你的IP地址]:5001")
         print()
         print("🔧 功能特性:")
         print("   • 实时温度湿度监控")
@@ -71,7 +71,7 @@ def main():
         socketio.run(
             app,
             host='0.0.0.0',
-            port=5000,
+            port=5001,
             debug=False,
             log_output=False
         )

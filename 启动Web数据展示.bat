@@ -1,11 +1,11 @@
 @echo off
 chcp 65001 >nul
-title CUST宿舍实时温度数据展示
+title DLUT宿舍实时温度数据展示
 
 echo.
 echo ========================================
-echo    CUST宿舍实时温度数据展示
-echo    长春理工大学宿舍环境数据查看平台
+echo    DLUT宿舍实时温度数据展示
+echo    大连理工大学宿舍环境数据查看平台
 echo ========================================
 echo.
 
@@ -29,7 +29,7 @@ echo    • 历史数据图表查看
 echo    • 设备连接状态显示
 echo    • 仅用于数据展示，不控制设备
 echo.
-echo 📱 Web界面: http://localhost:5000
+echo 📱 Web界面: http://localhost:5001
 echo 🌐 浏览器将自动打开
 echo.
 echo ⏹️  按 Ctrl+C 可停止服务

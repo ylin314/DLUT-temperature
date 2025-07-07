@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-CUST宿舍实时温度监控Web应用
+DLUT宿舍实时温度监控Web应用
 提供实时温度数据的Web界面
 """
 
@@ -24,7 +24,7 @@ logger = logging.getLogger(__name__)
 
 # 创建Flask应用
 app = Flask(__name__)
-app.config['SECRET_KEY'] = 'cust_temperature_monitor_2024'
+app.config['SECRET_KEY'] = 'dut_temperature_monitor_2025'
 # 创建SocketIO实例，修复WebSocket代理问题
 socketio = SocketIO(
     app,
@@ -211,7 +211,7 @@ def export_excel():
             })
             
             # 设置图表标题和坐标轴
-            chart.set_title({'name': 'CUST宿舍温湿度变化图'})
+            chart.set_title({'name': 'DUT宿舍温湿度变化图'})
             chart.set_x_axis({'name': '时间'})
             chart.set_y_axis({'name': '数值', 'major_gridlines': {'visible': True}})
             
@@ -240,7 +240,7 @@ def export_excel():
         output.seek(0)
         
         # 生成文件名，格式为"CUST温湿度数据_起始时间_结束时间.xlsx"
-        filename = f"CUST温湿度数据_{start_time.strftime('%Y%m%d%H%M')}_{end_time.strftime('%Y%m%d%H%M')}.xlsx"
+        filename = f"DUT温湿度数据_{start_time.strftime('%Y%m%d%H%M')}_{end_time.strftime('%Y%m%d%H%M')}.xlsx"
         
         return send_file(
             output, 
@@ -294,10 +294,10 @@ if __name__ == '__main__':
         monitor.start()
         
         # 启动Web服务器
-        logger.info("启动CUST宿舍实时温度监控Web应用")
-        logger.info("访问地址: http://localhost:5000")
+        logger.info("启动DLUT宿舍实时温度监控Web应用")
+        logger.info("访问地址: http://localhost:5001")
         
-        socketio.run(app, host='0.0.0.0', port=5000, debug=False)
+        socketio.run(app, host='0.0.0.0', port=5001, debug=False)
         
     except KeyboardInterrupt:
         logger.info("正在关闭应用...")
