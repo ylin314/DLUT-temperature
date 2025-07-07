@@ -4,38 +4,6 @@
 
 一个功能完整的智能温湿度监控系统，支持多品牌蓝牙设备，提供实时数据采集、存储和Web可视化展示。**支持国际化多语言界面，可快速配置为任何学校或机构使用**。
 
-## ✨ 核心特性
-
-### 🌍 国际化与配置化
-- **多语言支持** - 内置中文/英文界面，支持动态语言切换
-- **学校定制** - 一键配置学校名称、图标、链接等信息
-- **通用模板** - 可快速适配任何学校或机构使用
-- **品牌配置** - 支持自定义页脚、技术支持等信息
-
-### 🔗 智能连接
-- **自动设备发现** - 智能扫描附近的蓝牙温湿度计
-- **多设备支持** - 兼容小米、青萍等主流品牌温湿度计
-- **断线重连** - 设备断开后自动重新连接，确保数据连续性
-- **连接状态监控** - 实时显示设备连接状态和信号强度
-
-### 📊 数据管理
-- **实时采集** - 持续监控温湿度变化，数据更新频率可配置
-- **本地存储** - SQLite数据库安全存储历史数据
-- **数据完整性** - 包含温度、湿度、电池电量、时间戳等完整信息
-- **数据导出** - 支持Excel格式数据导出，可选择时间范围
-
-### 🌐 Web展示界面
-- **响应式设计** - 完美适配手机、平板、电脑等各种设备
-- **实时监控** - WebSocket驱动的毫秒级实时数据更新
-- **数据可视化** - Chart.js驱动的智能图表，支持移动端优化
-- **在线人数** - 实时显示当前访问人数
-
-### 🏗️ 架构设计
-- **服务分离** - 数据采集与Web展示服务独立运行
-- **模块化设计** - 核心功能模块化，易于扩展和维护
-- **异步处理** - 基于asyncio的高性能异步架构
-- **日志系统** - 完整的日志记录，便于问题排查
-
 ## 🎯 支持设备
 
 ### 小米生态链设备
@@ -77,53 +45,8 @@ flask-socketio>=5.3.0  # WebSocket支持
 python-socketio>=5.8.0 # Socket.IO客户端
 eventlet>=0.33.0       # 异步网络库
 python-engineio>=4.7.0 # Engine.IO支持
-```
-
-### ⚙️ 快速配置（适配其他学校）
-
-**1. 复制配置模板**
-```bash
-cp config.example.json static/config.json
-```
-
-**2. 编辑学校信息**
-```json
-{
-  "school": {
-    "name_zh": "你的大学名称",
-    "name_en": "Your University Name",
-    "short_name_zh": "大学简称",
-    "short_name_en": "UNI",
-    "favicon_url": "https://your-university.edu.cn/favicon.ico",
-    "location_zh": "宿舍",
-    "location_en": "Dormitory"
-  },
-  "app": {
-    "powered_by": "Powered by Your IT Department",
-    "powered_by_url": "https://your-university.edu"
-  }
-}
-```
-
-**3. 常见学校配置示例**
-```json
-// 北京大学
-{
-  "school": {
-    "name_zh": "北京大学", "name_en": "Peking University",
-    "short_name_zh": "北大", "short_name_en": "PKU",
-    "favicon_url": "https://www.pku.edu.cn/favicon.ico"
-  }
-}
-
-// 清华大学
-{
-  "school": {
-    "name_zh": "清华大学", "name_en": "Tsinghua University",
-    "short_name_zh": "清华", "short_name_en": "THU",
-    "favicon_url": "https://www.tsinghua.edu.cn/favicon.ico"
-  }
-}
+pandas>=2.0.0          # 数据处理库
+xlsxwriter>=3.0.0      # Excel文件写入库
 ```
 
 ### 🎮 启动方式
