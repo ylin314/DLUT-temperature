@@ -671,6 +671,9 @@ class TemperatureMonitor {
                 deviceNameElementMobile.textContent = deviceText;
                 deviceNameElementMobile.className = deviceClass;
             }
+            if (typeof status.online_users === 'number') {
+                this.updateOnlineUsers(status.online_users);
+            }
         } else {
             // 确保i18n已初始化
             if (window.i18n && window.i18n.currentLanguage) {
