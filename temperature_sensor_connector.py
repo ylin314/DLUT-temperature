@@ -340,17 +340,13 @@ class TemperatureSensorConnector:
                     devices = await self.scan_devices(timeout=10)
 
                     if devices:
+                        device = devices[0]
                         # 尝试连接指定设备号设备
                         for de in devices:
                             if de['name'] == device_name:
                                 device = de
                                 print("找到指定设备:", device_name)
-                                logger.info(f"尝试连接设备: {device['name']}")
-                                await self.connect(device['address'], device['name'])
-                                return
-                        # 尝试连接第一个设备
-                        print("未找到指定设备，尝试连接第一个设备")
-                        device = devices[0]
+                        # 尝试连接第一个设备                    
                         logger.info(f"尝试连接设备: {device['name']}")
                         await self.connect(device['address'], device['name'])
                     else:
