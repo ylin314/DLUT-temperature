@@ -34,7 +34,7 @@ git clone https://github.com/ylin314/DUT-temperature.git
 cd DUT-temperature
 
 # 安装依赖
-pip install -r requirements.txt
+pip install -i https://pypi.tuna.tsinghua.edu.cn/simple -r requirements.txt
 ```
 
 ### 依赖包说明
