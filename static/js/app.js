@@ -1264,6 +1264,9 @@ function downloadExcelFromModal() {
  * 使用指定日期下载Excel数据
  */
 function downloadExcelWithDates(startDate, endDate) {
+    // 修正时区
+    startDate = new Date(startDate.setHours(startDate.getHours() + 8));
+    endDate = new Date(endDate.setHours(endDate.getHours() + 8));
     // 构建API URL
     const url = `/api/export-excel?start_time=${startDate.toISOString()}&end_time=${endDate.toISOString()}`;
 
@@ -1288,7 +1291,7 @@ function downloadExcelWithDates(startDate, endDate) {
             a.href = url;
 
             // 生成文件名
-            const filename = `CUST温湿度数据_${startDate.toISOString().slice(0, 16).replace(/[:-]/g, '')}_${endDate.toISOString().slice(0, 16).replace(/[:-]/g, '')}.xlsx`;
+            const filename = `DUT温湿度数据_${startDate.toISOString().slice(0, 16).replace(/[:-]/g, '')}_${endDate.toISOString().slice(0, 16).replace(/[:-]/g, '')}.xlsx`;
             a.download = filename;
 
             document.body.appendChild(a);
